@@ -52,6 +52,15 @@ MAX_JUSTIFICATION_LEN = 1000
 #     the output is sent to review (malformed confidence is itself a red flag).
 DEFAULT_CONFIDENCE_THRESHOLD = 0.75
 
+# The single routing label the Router branches on. Exactly one of these is ever emitted, so
+# the four Router routes (Bug / Feature / Enhancement / Review) are mutually exclusive by
+# construction - each route matches `route` with a single-value `contains_any` list. This is a
+# DERIVED field (classification when approved, else "Review"); it changes NO validation
+# behavior, it only collapses the approved/requires_review + classification decision into one
+# string so the Router config stays a proven `contains_any` match.
+REVIEW_ROUTE = "Review"
+ALLOWED_ROUTES = ALLOWED_CLASSIFICATIONS + (REVIEW_ROUTE,)
+
 # Declared output field types - configure the Execute Code node outputs to match EXACTLY.
 OUTPUT_FIELDS = {
     "approved": "bool",            # True only for a clean, in-enum, well-formed result
@@ -60,6 +69,7 @@ OUTPUT_FIELDS = {
     "justification": "text",       # trimmed justification, or "" when requires_review
     "confidence": "text",          # stringified confidence or "" (text avoids null typing issues)
     "reason": "text",              # bounded, safe human-readable reason (never leaks raw input)
+    "route": "text",               # derived routing label: Bug/Feature/Enhancement or "Review"
 }
 
 
@@ -72,6 +82,7 @@ def _review(reason):
         "justification": "",
         "confidence": "",
         "reason": reason,
+        "route": REVIEW_ROUTE,
     }
 
 
@@ -187,6 +198,7 @@ def validate_classification(
         "justification": justification,
         "confidence": "" if conf is None else ("%.6g" % conf),
         "reason": "Classification accepted.",
+        "route": label,  # approved -> route IS the accepted label (Bug/Feature/Enhancement)
     }
 
 
@@ -200,11 +212,13 @@ def run(inputs, keyrings):
 
     Configure node outputs to match OUTPUT_FIELDS exactly:
       approved (bool), requires_review (bool), classification (text), justification (text),
-      confidence (text), reason (text).
+      confidence (text), reason (text), route (text).
 
-    The Router must send `approved == true` to the matching main path (Bug/Feature/
-    Enhancement) and `requires_review == true` to the review fallback path. This node never
-    changes severity or any other object field.
+    The Router branches on the single derived `route` field: it matches `route` with a
+    single-value `contains_any` list on each of the four routes - Bug / Feature /
+    Enhancement for an approved classification, and "Review" for everything that must be
+    reviewed. Exactly one route value is ever emitted, so the four routes are mutually
+    exclusive by construction. This node never changes severity or any other object field.
     """
     inputs = inputs or {}
     threshold = inputs.get("confidence_threshold", DEFAULT_CONFIDENCE_THRESHOLD)

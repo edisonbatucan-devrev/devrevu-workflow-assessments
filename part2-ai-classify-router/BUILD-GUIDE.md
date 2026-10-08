@@ -7,15 +7,23 @@ comment.
 
 **Org:** `edison-org-for-test`. Trigger filtered to a **distinct** Part 2 test part.
 
-## Why this part ships as a build-spec, not an import file
-Ask AI and Router node import/export shapes are **not verified** for this org. Importing a
-guessed template would silently fail or mislead. So the authoritative artifact is
-`build-specs/part2-classify-router.build-spec.json`, which maps every node + field. The
-Execute Code (`invoke_code`), `update_ticket`, and `add_comment` steps DO have known
-shapes and are specified exactly.
+## Two companion artifacts: an import template AND a build-spec
+- `templates/11-Part 2-template.json` is a **candidate IMPORT template** in the genuine
+  export wrapper (`templateVersion` `2.0.0`, inner `serialization_version` `{2,0,0}`, title
+  `Part 2`). It wires the full connected graph from the ACTUAL code/prompt in this folder.
+  It is **locally structure-validated** (`code/test_part2_template.py`: reachability,
+  no-cycles, route-name->edges, ports, no hardcoded IDs, enum policy, embedded code
+  compiles). A **live sandbox import has NOT been run** - the Ask AI / Router saved-config
+  fields that may be hidden or required-at-import for this org are not independently
+  verified, and no defaults were invented.
+- `build-specs/part2-classify-router.build-spec.json` is the companion **UI build map** (not
+  an importable file). Use it to configure/cross-check Ask AI + Router by hand if the import
+  needs manual completion. The Execute Code (`invoke_code`), `update_ticket`, and
+  `add_comment` steps have known shapes and are specified exactly in both artifacts.
 
 ## Files
-- `build-specs/part2-classify-router.build-spec.json` - full UI build map.
+- `templates/11-Part 2-template.json` - candidate IMPORT template (export format).
+- `build-specs/part2-classify-router.build-spec.json` - full UI build map (companion).
 - `prompts/classification-prompt.md` - the Ask AI prompt (with prompt-injection defense).
 - `code/classification_validator.py` - Execute Code node body that validates the Ask AI
   output into a safe, typed decision (`approved` vs `requires_review`) BEFORE routing.
@@ -38,11 +46,14 @@ shapes and are specified exactly.
    (default `0.75`, a stated design assumption). It **never mutates**. It returns
    `approved` (bool), `requires_review` (bool), `classification`, `justification`,
    `confidence`, `reason`. Configure the node outputs to match those types exactly.
-4. **Router** - exactly **3 mutually-exclusive named** main routes (Bug, Feature,
-   Enhancement) matched on `approved == true AND classification == '<label>'`,
-   first-match-only, plus a **Review fallback** route taken when `requires_review == true`.
-   Only an approved classification reaches a main path; the Review path posts a diagnostic
-   internal comment and performs **no mutation**.
+4. **Router** - **4 explicit named routes** (Bug, Feature, Enhancement, Review). Each route
+   condition is a `contains_any` match on the validator's single derived `route` output
+   against a one-element list (`['Bug']`, `['Feature']`, `['Enhancement']`, `['Review']`).
+   The validator emits exactly one `route` value, so the four routes are **mutually
+   exclusive by construction** - no `first_match_only` flag is used (none is a supported
+   export field) and no unsupported default-route flag is set. Only an approved
+   classification yields a Bug/Feature/Enhancement route; everything that must be reviewed
+   yields `Review`, which posts a diagnostic internal comment and performs **no mutation**.
 5. **Bug path**:
    - `update_ticket` severity = `high` (literal lowercase).
    - `invoke_code` title validator (see field shapes in the build-spec: `code` literal,

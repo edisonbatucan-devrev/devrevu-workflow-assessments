@@ -78,19 +78,20 @@
       "name": "AI classification + Router",
       "status": "Prepared - sandbox build/live validation pending",
       "code_prepared": true,
-      "importable_artifact": null,
+      "importable_artifact": "part2-ai-classify-router/templates/11-Part 2-template.json",
+      "importable_artifact_note": "Candidate IMPORT-format template (same export wrapper the Workflow Builder emits: templateVersion 2.0.0, serialization_version {2,0,0}, title 'Part 2'). Fully connected graph wired from the actual repo code/prompt. LOCALLY structure-validated (see code/test_part2_template.py) - a LIVE sandbox import has NOT been run. The Ask AI/Router saved-config fields that are hidden/required-at-import for this org are not independently verified; no defaults were invented. Before publishing, set the Ticket Created trigger filter to a dedicated Part 2 sandbox test part.",
       "build_spec": "part2-ai-classify-router/build-specs/part2-classify-router.build-spec.json",
-      "locally_tested": "Python validators (classification + title): all unittests passing locally (see tracking/test-execution-report.md for the exact count).",
+      "locally_tested": "Python validators (classification + title) and the Part 2 template-structure suite (reachability/no-cycles/route-name->edges/ports/no-hardcoded-IDs/enum policy/embedded code compiles): all unittests passing locally (see tracking/test-execution-report.md for the exact count).",
       "review": { "reviewer": null, "run": null, "result": "not_reviewed" },
       "links": { "workflow": null, "version": null, "run": null, "evidence": null },
       "subtasks": [
-        { "id": "p2-build", "title": "Build Ask AI -> classification_validator Execute Code -> Router (3 paths) + review fallback from the build-spec", "verification_status": "pending", "evidence": null },
+        { "id": "p2-build", "title": "Import or build Ask AI -> classification_validator Execute Code -> Router (3 paths) + review fallback. A candidate IMPORT template now exists (templates/11-Part 2-template.json); build-spec is the companion UI map.", "verification_status": "pending", "evidence": null },
         { "id": "p2-config", "title": "Configure Execute Code node outputs to match OUTPUT_FIELDS exactly; bind Ask AI output + ticket title into node inputs", "verification_status": "pending", "evidence": null },
         { "id": "p2-live-test", "title": "Live-test a Bug ticket (severity High + title validation comment) and a Feature ticket (classification comment)", "verification_status": "pending", "evidence": null },
         { "id": "p2-evidence", "title": "Screenshots: full canvas with Router 3 paths, Bug ticket, Feature ticket", "verification_status": "pending", "evidence": null }
       ],
       "blockers": [
-        "Ask AI and Router node import/export shapes not verified - build in UI from the build-spec (no made-up importable file).",
+        "Candidate IMPORT template is locally structure-validated but a LIVE sandbox import has NOT been run; Ask AI / Router hidden-or-required-at-import saved-config fields for this org are not independently verified (no defaults invented).",
         "Bug title format is a stated ASSUMPTION (^\\[BUG\\] .{5,120}$); adjust in-sandbox if the grader expects a different format."
       ]
     },

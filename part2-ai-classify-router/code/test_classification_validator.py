@@ -4,6 +4,8 @@ from classification_validator import (
     validate_classification,
     run,
     ALLOWED_CLASSIFICATIONS,
+    ALLOWED_ROUTES,
+    REVIEW_ROUTE,
     OUTPUT_FIELDS,
     DEFAULT_CONFIDENCE_THRESHOLD,
     MAX_JUSTIFICATION_LEN,
@@ -20,7 +22,38 @@ class TestClassificationValidator(unittest.TestCase):
             self.assertTrue(r["approved"], label)
             self.assertFalse(r["requires_review"], label)
             self.assertEqual(r["classification"], label)
+            # Approved -> the derived route IS the accepted label (what the Router matches on).
+            self.assertEqual(r["route"], label)
             self.assertEqual(set(r.keys()), OUTPUT_KEYS)
+
+    # --- derived route field (what the Router branches on) ---
+    def test_route_is_review_for_rejected_output(self):
+        r = validate_classification({"classification": "nope", "justification": "x"})
+        self.assertTrue(r["requires_review"])
+        self.assertEqual(r["route"], REVIEW_ROUTE)
+
+    def test_route_is_always_one_of_the_allowed_routes(self):
+        samples = [
+            {"classification": "Bug", "justification": "x"},
+            {"classification": "Feature", "justification": "x"},
+            {"classification": "Enhancement", "justification": "x"},
+            {"classification": "Question", "justification": "x"},  # -> Review
+            None,                                                   # -> Review
+            "[1,2,3]",                                              # -> Review
+        ]
+        for s in samples:
+            self.assertIn(validate_classification(s)["route"], ALLOWED_ROUTES)
+
+    def test_route_matches_classification_or_review_mutually_exclusive(self):
+        # Exactly one of (approved label, Review) is emitted - never both, never neither.
+        for s in [{"classification": "Bug", "justification": "x"}, {"bad": 1}]:
+            r = validate_classification(s)
+            if r["approved"]:
+                self.assertEqual(r["route"], r["classification"])
+                self.assertNotEqual(r["route"], REVIEW_ROUTE)
+            else:
+                self.assertEqual(r["route"], REVIEW_ROUTE)
+                self.assertEqual(r["classification"], "")
 
     def test_accepts_json_string_input(self):
         r = validate_classification('{"classification":"Bug","justification":"it crashes"}')
