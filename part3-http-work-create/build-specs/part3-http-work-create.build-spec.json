@@ -1,0 +1,100 @@
+{
+  "_comment": "BUILD-SPEC ONLY - NOT an importable template. HTTP node and notification node export shapes are NOT verified for this org. Configure in the UI from this map. edison-org-for-test ONLY; set the trigger part filter + severity filter before publishing.",
+  "part": 3,
+  "title": "DevRevU Part 3 - HTTP works.create + reverse severity",
+  "org": "edison-org-for-test",
+  "trigger": {
+    "operation": "devrev/ticket_created",
+    "reference_key": "ticket_created_1",
+    "filter": "REQUIRED: dedicated Part 3 test part AND severity == 'low'"
+  },
+  "nodes": [
+    {
+      "step": "build_request",
+      "node_type": "devrev/invoke_code",
+      "import_shape_known": true,
+      "code_source": "../code/build_request.py",
+      "inputs_binding": {
+        "ticket_id": "$get('ticket_created_1','output').id",
+        "title": "$get('ticket_created_1','output').title",
+        "applies_to_part_id": "$get('ticket_created_1','output').applies_to_part.id",
+        "owned_by_ids": "map($get('ticket_created_1','output').owned_by, function($u){ $u.id })",
+        "severity": "$get('ticket_created_1','output').severity"
+      },
+      "outputs": ["body (text)", "external_ref (text)"],
+      "notes": "Builds the works.create JSON via json.dumps. owned_by must be an ARRAY of user DONs - map the trigger owned_by objects to their .id."
+    },
+    {
+      "step": "http_works_create",
+      "node_type": "HTTP",
+      "import_shape_known": false,
+      "method": "POST",
+      "url": "https://api.devrev.ai/works.create",
+      "headers": {
+        "Authorization": "Bearer <SANDBOX_API_TOKEN connection>",
+        "Content-Type": "application/json"
+      },
+      "auth": "Use an ACTIVE sandbox Auth Token CONNECTION (Bearer). NEVER paste a raw token into the node or this repo.",
+      "body": "$get('build_request','output').body",
+      "idempotency": "Body carries external_ref 'devrevu-p3:<ticket id>' to MITIGATE duplicates (not exactly-once). Prefer: check for an existing work with that external_ref BEFORE create, or handle a 409 conflict explicitly. Do NOT blindly POST-retry.",
+      "response_capture": "Capture status_code and the full JSON body in the node outputs. Configure the DOWNSTREAM output mapping from an ACTUAL captured sandbox response (see sample-response.PLACEHOLDER.json)."
+    },
+    {
+      "step": "validate_response",
+      "node_type": "devrev/invoke_code",
+      "import_shape_known": true,
+      "code_source": "../code/validate_response.py",
+      "inputs_binding": {
+        "status_code": "$get('http_works_create','output').status_code",
+        "response_body": "$get('http_works_create','output').body"
+      },
+      "outputs": ["work_id (text)", "display_id (text)"],
+      "notes": "RAISES on non-2xx OR missing work.id/display_id so a non-2xx HTTP finish becomes a FAILED run. Never leaks body/token. Verify the real response field path and set outputs from the actual response."
+    },
+    {
+      "step": "reverse_severity",
+      "node_type": "devrev/invoke_code",
+      "import_shape_known": true,
+      "code_source": "../code/reverse_severity.py",
+      "inputs_binding": { "severity": "$get('ticket_created_1','output').severity" },
+      "outputs": ["reversed (text)", "original (text)"]
+    },
+    {
+      "step": "comment_on_issue",
+      "node_type": "devrev/add_comment",
+      "import_shape_known": true,
+      "inputs": {
+        "object": { "type": "jsonata_expression", "value": "$get('validate_response','output').work_id" },
+        "visibility": { "type": "literal", "value": "internal" },
+        "body": { "type": "text_template", "value": "Reversed severity: {% expr $get('reverse_severity','output').reversed %} (from {% expr $get('reverse_severity','output').original %})." }
+      },
+      "notes": "Comment goes on the CREATED ISSUE (work_id from validate_response)."
+    },
+    {
+      "step": "comment_on_ticket",
+      "node_type": "devrev/add_comment",
+      "import_shape_known": true,
+      "note": "Screenshot deliverable asks for comments on BOTH ticket and issue, so also post an internal comment on the originating ticket.",
+      "inputs": {
+        "object": { "type": "jsonata_expression", "value": "$get('ticket_created_1','output').id" },
+        "visibility": { "type": "literal", "value": "internal" },
+        "body": { "type": "text_template", "value": "Linked issue {% expr $get('validate_response','output').display_id %} created for this ticket." }
+      }
+    },
+    {
+      "step": "link_ticket_to_issue",
+      "node_type": "devrev/link (OPTIONAL enhancement)",
+      "import_shape_known": false,
+      "optional": true,
+      "notes": "Optional supported enhancement: link the Ticket to the created Issue if a link operation is available in your org."
+    },
+    {
+      "step": "notify_owner",
+      "node_type": "Notification",
+      "import_shape_known": false,
+      "recipient": "$get('ticket_created_1','output').owned_by (ticket owner)",
+      "message": "{% expr $get('validate_response','output').display_id %} has been created for your ticket.",
+      "notes": "Use the real display_id from the validated response. Notification node export shape is NOT verified - configure in UI."
+    }
+  ]
+}

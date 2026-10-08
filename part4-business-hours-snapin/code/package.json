@@ -1,0 +1,19 @@
+{
+  "name": "business-hours-validator-snapin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DevRevU Part 4 - Business Hours Validator custom operation (candidate snap-in).",
+  "type": "module",
+  "scripts": {
+    "test:core": "node test/business_hours.core.test.mjs",
+    "test:core-py": "cd test && python3 -m unittest test_business_hours_core",
+    "build": "tsc -p tsconfig.json",
+    "comment": "No Node in the authoring env, so test:core was NOT run here; test:core-py (a Python semantic-parity twin) WAS run. SDK adapter build/deploy requires @devrev/typescript-sdk + DevRev CLI and manifest.example.yaml must be CLI-validated and copied to manifest.yaml; not installed/validated in this package."
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "@devrev/typescript-sdk": "*"
+  }
+}

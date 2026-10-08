@@ -1,0 +1,25 @@
+{
+  "_comment": "BUILD-SPEC ONLY. Describes the intentional fault for Part 5 on a COPY of Part 3. edison-org-for-test only.",
+  "part": 5,
+  "based_on": "part3-http-work-create",
+  "org": "edison-org-for-test",
+  "fault_options": [
+    {
+      "name": "wrong-endpoint-plus-validator",
+      "description": "Point HTTP node at a bad path; the Part 3 validate_response node raises on non-2xx so the run FAILS deterministically.",
+      "http_url_before": "https://api.devrev.ai/works.create",
+      "http_url_after": "https://api.devrev.ai/works.create-404",
+      "keep_validator": true,
+      "why_needed": "A bare non-2xx (e.g. 404) may let the HTTP node 'finish'; the validator raise is what makes the run fail."
+    },
+    {
+      "name": "deterministic-raise-in-code",
+      "description": "Keep the correct endpoint; add a temporary raise at the top of validate_response to guarantee a failed run with no external dependency.",
+      "inject_line": "raise RuntimeError('Part 5 injected fault')",
+      "location": "top of validate_response.run()",
+      "remove_on_fix": true
+    }
+  ],
+  "fix": "Restore the correct endpoint (option 1) OR remove the injected raise (option 2), then PUBLISH A NEW VERSION and re-trigger to verify success.",
+  "safety": "Do not point the fault at a real mutating endpoint/token. Mask tokens in screenshots. Keep the Part 3 test-part + severity=low filter."
+}
