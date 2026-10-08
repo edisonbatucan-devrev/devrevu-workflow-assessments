@@ -202,10 +202,77 @@ def validate_classification(
     }
 
 
-def run(inputs, keyrings):
-    """DevRev Execute Code entrypoint.
+# ---------------------------------------------------------------------------
+# ASSESSMENT-ALIGNED strict entrypoint (the shape EMBEDDED in the live template)
+# ---------------------------------------------------------------------------
+# The exercise's Router has EXACTLY three named paths (Bug / Feature / Enhancement) and no
+# 4th path. The template therefore embeds a STRICT validator that RAISES ValueError on any
+# invalid / malformed / unknown / low-confidence AI output - which STOPS the run (it shows as
+# a failed run in the Runs tab) rather than routing to a Review fallback or silently mutating
+# the ticket. The `validate_classification` / `_review` helpers above remain available as an
+# OPTIONAL general-purpose module (e.g. for a design that wants a non-failing Review branch),
+# documented separately; they are NOT what the aligned template runs.
 
-    Configure the node inputs (all optional except ai_output):
+
+def validate_classification_strict(
+    ai_output,
+    classification_key=DEFAULT_CLASSIFICATION_KEY,
+    justification_key=DEFAULT_JUSTIFICATION_KEY,
+    confidence_key=DEFAULT_CONFIDENCE_KEY,
+    confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD,
+):
+    """Strict core used by the ALIGNED template. Returns
+    {route, classification, justification} for a clean, in-enum result and RAISES ValueError
+    on ANYTHING invalid (so the workflow run stops - no 4th Review route). Never mutates its
+    input, never evals/execs any value.
+    """
+    result = validate_classification(
+        ai_output,
+        classification_key=classification_key,
+        justification_key=justification_key,
+        confidence_key=confidence_key,
+        confidence_threshold=confidence_threshold,
+    )
+    if result["requires_review"]:
+        raise ValueError(result["reason"])
+    return {
+        "route": result["classification"],      # always one of Bug/Feature/Enhancement
+        "classification": result["classification"],
+        "justification": result["justification"],
+    }
+
+
+def run_strict(inputs, keyrings):
+    """DevRev Execute Code entrypoint for the ALIGNED (3-route) template.
+
+    Input: ai_output (Ask AI structured output / raw JSON string). Output: route (text),
+    classification (text), justification (text). Invalid output RAISES ValueError and the run
+    fails - there is NO Review route and NO mutation on bad AI output.
+    """
+    inputs = inputs or {}
+    threshold = inputs.get("confidence_threshold", DEFAULT_CONFIDENCE_THRESHOLD)
+    try:
+        threshold = float(threshold)
+        if threshold != threshold or threshold < 0.0 or threshold > 1.0:
+            threshold = DEFAULT_CONFIDENCE_THRESHOLD
+    except (TypeError, ValueError):
+        threshold = DEFAULT_CONFIDENCE_THRESHOLD
+    return validate_classification_strict(
+        inputs.get("ai_output"),
+        classification_key=inputs.get("classification_key", DEFAULT_CLASSIFICATION_KEY),
+        justification_key=inputs.get("justification_key", DEFAULT_JUSTIFICATION_KEY),
+        confidence_key=inputs.get("confidence_key", DEFAULT_CONFIDENCE_KEY),
+        confidence_threshold=threshold,
+    )
+
+
+def run(inputs, keyrings):
+    """DevRev Execute Code entrypoint (OPTIONAL non-failing / general module).
+
+    This is the OPTIONAL Review-emitting variant (safety improvement documented separately),
+    NOT the shape embedded in the aligned template. The aligned template embeds the strict
+    `run_strict` behavior (raise-on-invalid). Configure node inputs (all optional except
+    ai_output):
       - ai_output: the Ask AI node's structured output (dict) OR its raw JSON string.
       - classification_key / justification_key / confidence_key: optional field-name overrides.
       - confidence_threshold: optional float (default 0.75 - a stated design assumption).

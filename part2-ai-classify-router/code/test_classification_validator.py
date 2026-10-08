@@ -2,7 +2,9 @@ import unittest
 
 from classification_validator import (
     validate_classification,
+    validate_classification_strict,
     run,
+    run_strict,
     ALLOWED_CLASSIFICATIONS,
     ALLOWED_ROUTES,
     REVIEW_ROUTE,
@@ -285,6 +287,81 @@ class TestClassificationValidator(unittest.TestCase):
         # Valid JSON object, but label is an array -> rejected (type injection via string).
         r = validate_classification('{"classification":["Bug"],"justification":"x"}')
         self.assertTrue(r["requires_review"])
+
+
+class TestClassificationValidatorStrict(unittest.TestCase):
+    """The ALIGNED (3-route) embedded shape: returns an enum route for clean input and RAISES
+    ValueError on anything invalid (stops the run; no 4th Review path)."""
+
+    EXPECTED_KEYS = {"route", "classification", "justification"}
+
+    # --- valid: returns one of the three accepted routes, no Review ---
+    def test_strict_returns_accepted_route_for_each_label(self):
+        for label in ALLOWED_CLASSIFICATIONS:
+            r = validate_classification_strict({"classification": label, "justification": "ok"})
+            self.assertEqual(set(r.keys()), self.EXPECTED_KEYS)
+            self.assertEqual(r["route"], label)
+            self.assertEqual(r["classification"], label)
+            self.assertIn(r["route"], ALLOWED_CLASSIFICATIONS)
+            self.assertNotEqual(r["route"], REVIEW_ROUTE)
+
+    def test_strict_trims_justification(self):
+        r = validate_classification_strict({"classification": "Bug", "justification": "  it crashes  "})
+        self.assertEqual(r["justification"], "it crashes")
+
+    def test_strict_accepts_json_string(self):
+        r = validate_classification_strict('{"classification":"Feature","justification":"new thing"}')
+        self.assertEqual(r["route"], "Feature")
+
+    # --- invalid: RAISES ValueError (stops the run) instead of a Review route ---
+    def test_strict_raises_on_unknown_label(self):
+        with self.assertRaises(ValueError):
+            validate_classification_strict({"classification": "Question", "justification": "x"})
+
+    def test_strict_raises_on_wrong_case(self):
+        with self.assertRaises(ValueError):
+            validate_classification_strict({"classification": "bug", "justification": "x"})
+
+    def test_strict_raises_on_empty_justification(self):
+        with self.assertRaises(ValueError):
+            validate_classification_strict({"classification": "Bug", "justification": "   "})
+
+    def test_strict_raises_on_missing_label(self):
+        with self.assertRaises(ValueError):
+            validate_classification_strict({"justification": "x"})
+
+    def test_strict_raises_on_malformed_json(self):
+        with self.assertRaises(ValueError):
+            validate_classification_strict("{not json")
+
+    def test_strict_raises_on_none(self):
+        with self.assertRaises(ValueError):
+            validate_classification_strict(None)
+
+    def test_strict_raises_on_fenced_json(self):
+        with self.assertRaises(ValueError):
+            validate_classification_strict('```json\n{"classification":"Bug","justification":"x"}\n```')
+
+    def test_strict_raises_on_low_confidence(self):
+        with self.assertRaises(ValueError):
+            validate_classification_strict({"classification": "Bug", "justification": "x", "confidence": 0.1})
+
+    # --- run_strict entrypoint ---
+    def test_run_strict_shape(self):
+        out = run_strict({"ai_output": {"classification": "Enhancement", "justification": "x"}}, {})
+        self.assertEqual(set(out.keys()), self.EXPECTED_KEYS)
+        self.assertEqual(out["route"], "Enhancement")
+
+    def test_run_strict_raises_on_bad_input(self):
+        with self.assertRaises(ValueError):
+            run_strict({"ai_output": {"classification": "nope", "justification": "x"}}, {})
+        with self.assertRaises(ValueError):
+            run_strict({}, {})
+
+    def test_run_strict_never_emits_review_route(self):
+        out = run_strict({"ai_output": {"classification": "Bug", "justification": "x"}}, {})
+        self.assertIn(out["route"], ALLOWED_CLASSIFICATIONS)
+        self.assertNotEqual(out["route"], REVIEW_ROUTE)
 
 
 if __name__ == "__main__":
