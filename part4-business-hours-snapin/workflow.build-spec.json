@@ -1,0 +1,55 @@
+{
+  "_comment": "BUILD-SPEC ONLY. Conversation trigger + custom-op node + routing node export shapes NOT verified. Configure in UI. edison-org-for-test; dedicated test CHANNEL filter required before publish.",
+  "part": 4,
+  "title": "DevRevU Part 4 - Business-hours conversation routing",
+  "org": "edison-org-for-test",
+  "trigger": {
+    "node_type": "Conversation Created",
+    "import_shape_known": false,
+    "filter": "REQUIRED: dedicated test PLuG/email channel",
+    "fields_used": ["created_date"]
+  },
+  "nodes": [
+    {
+      "step": "validate_business_hours",
+      "node_type": "custom operation (Business Hour Validator snap-in)",
+      "import_shape_known": false,
+      "inputs": {
+        "org_schedule_id": "<REAL org schedule id in sandbox>",
+        "timestamp": "conversation.created_date"
+      },
+      "outputs": ["is_within_business_hours (bool)", "next_open_time (text)", "evaluated_at (text)"]
+    },
+    {
+      "step": "route_if_else",
+      "node_type": "devrev/if_else",
+      "import_shape_known": true,
+      "condition": "is_within_business_hours == true",
+      "true_branch": "route_to_live_agent",
+      "false_branch": "auto_reply_offline"
+    },
+    {
+      "step": "route_to_live_agent",
+      "node_type": "route/assign (UI)",
+      "import_shape_known": false,
+      "notes": "Route the conversation to a REAL live group/agent in the sandbox."
+    },
+    {
+      "step": "auto_reply_offline",
+      "node_type": "conversation reply (UI)",
+      "import_shape_known": false,
+      "message": "We're currently offline. We'll get back to you at {% expr $get('validate_business_hours','output').next_open_time %}.",
+      "notes": "Include the time ONLY if next_open_time is non-empty. If empty, send a generic offline message without a fabricated time."
+    },
+    {
+      "step": "error_diagnostic",
+      "node_type": "devrev/add_comment",
+      "import_shape_known": true,
+      "notes": "On validator/schedule error, post an INTERNAL diagnostic comment. Do NOT claim 'offline' - a schedule error is not the same as outside-hours.",
+      "inputs": {
+        "visibility": { "type": "literal", "value": "internal" },
+        "body": { "type": "text_template", "value": "Business-hours validation error - routing fell back to manual. (Schedule error, not an offline determination.)" }
+      }
+    }
+  ]
+}

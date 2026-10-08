@@ -7,10 +7,10 @@ severities: post a different comment. Deploy, create test tickets, verify in Run
 **Org:** `edison-org-for-test` only. Trigger must be filtered to a dedicated Part 1 test part.
 
 ## What's in this folder
-- `templates/part1-severity-branch.DRAFT-STARTER.template.json` - importable **draft
-  starter** with the known steps (trigger, If/Else, two internal comments). It
-  **deliberately omits** the priority-update step because the real priority field for this
-  org is not verified. It is not safe to publish until you complete the steps below.
+- `templates/10-Part 1-template.json` - importable template (title `Part 1`) with the
+  known steps (trigger, If/Else, two internal comments). It **deliberately omits** the
+  priority-update step because the real priority field for this org is not verified, so it
+  is a **draft starter**: not safe to publish until you complete the steps below.
 - `screenshots/CHECKLIST.md` - exactly which screenshots the assessment wants.
 
 ## Step-by-step build (Workflow Builder UI)
@@ -110,3 +110,32 @@ ticket in the org.
 | 2 | severity = high | false | different internal comment, no priority change |
 | 3 | severity = low | false | different internal comment, no priority change |
 | 4 | ticket in a *different* part | (no trigger) | workflow does not run (filter proof) |
+
+## Manual sandbox execution & testing
+
+This part is **import-based**: import `templates/10-Part 1-template.json`, finish the
+priority-field step above, set the trigger part filter, then publish. The build is already
+confirmed complete by Edison; this section records how to reproduce/verify the live run and
+is **not** a rewrite of the existing workflow or screenshots.
+
+- **Prerequisites:** sandbox `edison-org-for-test`; a dedicated `Part 1 Test` part; a real
+  exposed priority field selected in the Update Ticket node (Step 3).
+- **Settings to confirm before publish:** trigger filter Part = `Part 1 Test`; both
+  `add_comment` nodes `visibility = internal`; blocker-comment body uses the `{% expr ... %}`
+  creator-mention token (not `<% expr %>`).
+- **Trigger / event:** create a ticket in `Part 1 Test` (Ticket Created event).
+- **Sample inputs & expected outputs:**
+  - Blocker ticket -> True branch: priority updated + internal comment mentioning the creator
+    (resolved `@creator`, not a literal expression).
+  - High/Low ticket -> False branch: the "no escalation required" internal comment, no
+    priority change.
+- **Negative / edge cases:**
+  - Ticket created in a *different* part -> workflow does **not** run (filter proof).
+  - If the mention renders literally, the comment body still uses `<% expr %>`; re-insert via
+    the variable picker so it emits `{% expr ... %}`.
+- **Evidence (screenshots in `screenshots/`, see `screenshots/CHECKLIST.md`):**
+  - `image.png` - canvas, workflow Active.
+  - `image-1.png` - a successful run in the Runs tab.
+  - `image-2.png` - the ticket with the automated internal comment / resolved mention.
+  - Still pending to close the optional checklist: a non-blocker ticket's comment and a
+    screenshot of the configured real priority-field update.

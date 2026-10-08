@@ -1,0 +1,74 @@
+# Part 4 - Business Hours Validator snap-in manifest - CANDIDATE EXAMPLE (NOT a verified,
+# importable deployment manifest). This file is intentionally named manifest.example.yaml so
+# it is NOT mistaken for a deploy-ready manifest. Copy it to `manifest.yaml` only after you
+# have CLI-validated the scopes with your SDK/CLI version.
+#
+# Fields name/display_name/description/slug/function/type/inputs.fields/outputs.fields/
+# ui.display_name are KNOWN. The service_account scopes block and operation static_scopes
+# are a CANDIDATE: the EXACT structure is NOT verified here. Validate with the DevRev CLI
+# (`devrev snap_in version create` / manifest validate) before deploy. Do not treat the
+# scopes section as final. See TODO markers.
+
+version: "2"
+
+name: business-hours-validator
+description: >-
+  Custom operation (3P node) that checks whether a timestamp falls within an organization's
+  configured business hours, for conversation routing. edison-org-for-test only.
+
+service_account:
+  display_name: Business Hours Validator Bot
+
+# TODO(VERIFY-SCOPES): confirm scope slug + the exact self/scopes structure with the CLI and
+# the API-to-scope reference. 'org_schedule:read' is a CANDIDATE scope name.
+  scopes:
+    self:
+      - scope: "org_schedule:read"
+        optional: false
+        reason: "Read and evaluate the org schedule via org-schedules.evaluate/get/list."
+
+functions:
+  - name: business_hours_validator
+    description: Evaluate whether a timestamp is within the org's business hours.
+
+operations:
+  - name: business_hours_validator
+    display_name: Business Hour Validator
+    description: >-
+      Receives a timestamp and an org schedule id and returns whether the timestamp is
+      within business hours, plus the next opening time if it is not.
+    slug: business-hours-validator
+    function: business_hours_validator
+    type: action
+    # TODO(VERIFY-SCOPES): operation static_scopes required to call org-schedules.evaluate
+    # are UNRESOLVED. Mark explicit and validate with the CLI; do NOT fabricate.
+    # static_scopes:
+    #   - "<unresolved - validate with CLI / API-to-scope reference>"
+    inputs:
+      fields:
+        - name: org_schedule_id
+          display_name: Org schedule ID
+          description: The organization schedule to evaluate against.
+          field_type: text
+          is_required: true
+        - name: timestamp
+          display_name: Timestamp
+          description: ISO-8601 timestamp (with offset) to evaluate. e.g. conversation created_date.
+          field_type: text
+          is_required: true
+    outputs:
+      fields:
+        - name: is_within_business_hours
+          display_name: Is within business hours
+          description: True if the timestamp falls within business hours.
+          field_type: bool
+        - name: next_open_time
+          display_name: Next open time
+          description: Next opening time (ISO-8601) if outside hours; empty if active or unknown.
+          field_type: text
+        - name: evaluated_at
+          display_name: Evaluated at
+          description: The normalized ISO-8601 instant that was evaluated.
+          field_type: text
+    ui:
+      display_name: Business Hour Validator
