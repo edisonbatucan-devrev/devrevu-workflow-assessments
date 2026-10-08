@@ -1,0 +1,196 @@
+{
+  "assessment": "DevRevU Advanced Workflow Exercise",
+  "course": "DevRevU Workflows and Automations",
+  "org": "edison-org-for-test",
+  "org_url": "https://app.devrev.ai/edison-org-for-test",
+  "generated_on": "2026-10-08",
+  "tracking_scope": "Tracking lives in this repository only. Statuses below reflect what has been prepared and locally verifiable in this repo; they are NOT a claim of a passed or submitted LMS assessment. No official LMS pass/score is recorded here because none was provided.",
+  "overall_status": "Part 1 completed - confirmed by Edison; remaining course parts outside this revision",
+  "repo_url": "https://github.com/edisonbatucan-devrev/devrevu-workflow-assessments",
+  "parts": [
+    {
+      "id": "part1",
+      "name": "Workflow fundamentals - severity branching",
+      "status": "Completed - confirmed by Edison",
+      "code_prepared": true,
+      "locally_tested": "JSON parses; both malformed comment delimiters corrected; graph and non-comment fields unchanged. Live retest pending.",
+      "importable_artifact": "part1-ticket-severity-branch/templates/7-Workflow fundamentals-template.json",
+      "blockers": [],
+      "subtasks": [
+        {
+          "id": "p1-s01",
+          "title": "Verify sandbox org edison-org-for-test is accessible and in use",
+          "evidence": null,
+          "verification_status": "not_started",
+          "status": "not_individually_confirmed",
+          "note": "Per-item result not separately confirmed; does not override overall user-confirmed completion."
+        },
+        {
+          "id": "p1-s02",
+          "title": "Create/confirm a dedicated Part 1 test part and set the Ticket Created trigger filter to it",
+          "evidence": null,
+          "verification_status": "not_started",
+          "status": "not_individually_confirmed",
+          "note": "Per-item result not separately confirmed; does not override overall user-confirmed completion."
+        },
+        {
+          "id": "p1-s03",
+          "title": "On blocker branch, validate and use a REAL exposed priority field for the update (confirm the field exists; do NOT claim the current starter template already includes the priority-update step)",
+          "evidence": null,
+          "verification_status": "not_started",
+          "status": "not_individually_confirmed",
+          "note": "Per-item result not separately confirmed; does not override overall user-confirmed completion."
+        },
+        {
+          "id": "p1-s04",
+          "title": "Blocker-branch internal comment mentions the creator via a dynamic variable and is set to internal visibility",
+          "evidence": null,
+          "verification_status": "not_started",
+          "status": "not_individually_confirmed",
+          "note": "Per-item result not separately confirmed; does not override overall user-confirmed completion."
+        },
+        {
+          "id": "p1-s05",
+          "title": "Non-blocker branch posts a different internal comment",
+          "evidence": [
+            "part1-ticket-severity-branch/screenshots/image-2.png"
+          ],
+          "note": "TKT-9 Medium has a workflow-posted internal comment, but severity interpolation failed; rendered text still contains the expression. Per-item result not separately confirmed; does not override overall user-confirmed completion.",
+          "verification_status": "partial",
+          "status": "not_individually_confirmed"
+        },
+        {
+          "id": "p1-s06",
+          "title": "Validate the workflow and publish/deploy a version",
+          "evidence": [
+            "part1-ticket-severity-branch/screenshots/image.png",
+            "part1-ticket-severity-branch/screenshots/image-3.png"
+          ],
+          "note": "Active v2 and Completed run for TKT-9 shown. Validation action itself is not evidenced; completed execution is not assessment success. Per-item result not separately confirmed; does not override overall user-confirmed completion.",
+          "verification_status": "partial",
+          "status": "not_individually_confirmed"
+        },
+        {
+          "id": "p1-s07",
+          "title": "Test a blocker ticket (true branch): priority updated + creator-mention comment",
+          "evidence": null,
+          "verification_status": "not_started",
+          "status": "not_individually_confirmed",
+          "note": "Per-item result not separately confirmed; does not override overall user-confirmed completion."
+        },
+        {
+          "id": "p1-s08",
+          "title": "Test high severity (false branch): different comment, no priority change",
+          "evidence": null,
+          "verification_status": "not_started",
+          "status": "not_individually_confirmed",
+          "note": "Per-item result not separately confirmed; does not override overall user-confirmed completion."
+        },
+        {
+          "id": "p1-s09",
+          "title": "Test medium severity (false branch): different comment, no priority change",
+          "evidence": [
+            "part1-ticket-severity-branch/screenshots/image-2.png",
+            "part1-ticket-severity-branch/screenshots/image-3.png"
+          ],
+          "note": "Medium ticket TKT-9 ran and received internal comment; variable expression rendered literally. Priority preservation not yet verified. Per-item result not separately confirmed; does not override overall user-confirmed completion.",
+          "verification_status": "needs_fix",
+          "status": "not_individually_confirmed"
+        },
+        {
+          "id": "p1-s10",
+          "title": "Test low severity (false branch): different comment, no priority change",
+          "evidence": null,
+          "verification_status": "not_started",
+          "status": "not_individually_confirmed",
+          "note": "Per-item result not separately confirmed; does not override overall user-confirmed completion."
+        },
+        {
+          "id": "p1-s11",
+          "title": "Test a ticket OUTSIDE the test part: workflow does not run (filter proof)",
+          "evidence": null,
+          "verification_status": "not_started",
+          "status": "not_individually_confirmed",
+          "note": "Per-item result not separately confirmed; does not override overall user-confirmed completion."
+        },
+        {
+          "id": "p1-s12",
+          "title": "Verify dynamic IDs by creating a SECOND ticket and confirming the comment references the new ticket/creator (not hardcoded)",
+          "evidence": null,
+          "verification_status": "not_started",
+          "status": "not_individually_confirmed",
+          "note": "Per-item result not separately confirmed; does not override overall user-confirmed completion."
+        },
+        {
+          "id": "p1-s13",
+          "title": "Confirm updating an EXISTING ticket does NOT re-run the Ticket Created workflow",
+          "evidence": null,
+          "verification_status": "not_started",
+          "status": "not_individually_confirmed",
+          "note": "Per-item result not separately confirmed; does not override overall user-confirmed completion."
+        },
+        {
+          "id": "p1-s14",
+          "title": "Capture evidence: workflow canvas, successful run in Runs tab, ticket with automated internal comment, and the updated priority value",
+          "evidence": [
+            "part1-ticket-severity-branch/screenshots/image.png",
+            "part1-ticket-severity-branch/screenshots/image-3.png",
+            "part1-ticket-severity-branch/screenshots/image-2.png"
+          ],
+          "note": "Canvas, Runs and comment evidence present. Blocker priority update and creator mention evidence still missing. Per-item result not separately confirmed; does not override overall user-confirmed completion.",
+          "verification_status": "partial",
+          "status": "not_individually_confirmed"
+        }
+      ],
+      "review": {
+        "reviewer": null,
+        "result": "completed_user_confirmed",
+        "note": "Completion confirmed by Edison; no official LMS score or independent review recorded."
+      },
+      "links": {
+        "workflow": null,
+        "version": null,
+        "run": null,
+        "ticket": null,
+        "evidence": [
+          "part1-ticket-severity-branch/screenshots/image.png",
+          "part1-ticket-severity-branch/screenshots/image-2.png",
+          "part1-ticket-severity-branch/screenshots/image-3.png"
+        ]
+      },
+      "evidence_review": [
+        {
+          "path": "part1-ticket-severity-branch/screenshots/image.png",
+          "finding": "Active v2 canvas: Ticket Created -> severity If/Else -> internal comment branches. No priority update action visible."
+        },
+        {
+          "path": "part1-ticket-severity-branch/screenshots/image-1.png",
+          "finding": "Duplicate of the active canvas screenshot; not separate run evidence."
+        },
+        {
+          "path": "part1-ticket-severity-branch/screenshots/image-2.png",
+          "finding": "TKT-9 is Medium with workflow-posted internal comment. The <% expr ... %> expression is displayed literally."
+        },
+        {
+          "path": "part1-ticket-severity-branch/screenshots/image-3.png",
+          "finding": "Runs page displays Completed runs for TKT-7 and TKT-8 on v1 and TKT-9 on v2. This proves execution, not all acceptance criteria."
+        }
+      ],
+      "completion": {
+        "confirmed_by": "Edison Batucan",
+        "confirmed_on": "2026-10-08",
+        "basis": "User explicitly confirmed Part 1 completed and screenshots included in latest repository revision. Not an independent certification of every acceptance criterion or official LMS pass."
+      },
+      "follow_ups": [
+        {
+          "id": "p1-followup-severity",
+          "title": "Deploy comment-template syntax correction and retest both branches",
+          "status": "fix_prepared_awaiting_live_retest",
+          "blocking_completion": false,
+          "note": "Edison reports literal expression rendering persisted when severity was set. Missing severity is no longer the working explanation. Export contained incorrect <% expr ... %> delimiters; both comment bodies were corrected to {% expr ... %}. No new live run has verified this fix."
+        }
+      ],
+      "subtask_scope": "Detailed acceptance checklist retained for optional verification, not unresolved completion blockers. Overall completion confirmed by Edison does not fabricate individual test results."
+    }
+  ]
+}
