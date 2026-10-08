@@ -20,7 +20,7 @@ Package vs deployed, at a glance:
 | Part | In this repo | Status | Needs a human in the sandbox |
 |------|--------------|--------|------------------------------|
 | 1 - Severity branching | Importable draft-starter template + guide + screenshots | **Completed (user-confirmed)** | Non-blocker comment + real priority-field screenshots to finish the optional checklist |
-| 2 - AI classify + Router | `classification_validator` + `title_validator` (code + 63 tests), Ask AI prompt, build-spec | Prepared | Build Ask AI/Router in UI, live-test, screenshots |
+| 2 - AI classify + Router | Candidate IMPORT template (`templates/11-Part 2-template.json`), `classification_validator` + `title_validator` (code + tests), Ask AI prompt, build-spec | Prepared | Import/build, set sandbox trigger filter, live-test, screenshots |
 | 3 - HTTP works.create | request builder / response validator / reverse / notify-gate (code + 52 tests), build-spec | Prepared | Capture real response shape, deploy, live-test, screenshots |
 | 4 - Business Hours snap-in | dependency-free core (`.mjs`+`.ts`) + Python twin (17 tests), candidate manifest + adapter | Prepared (candidate) | Resolve scopes, compile, CLI-validate, deploy, live-test, screenshots |
 | 5 - Monitoring/debug | fault-injection build-spec + Python fault/recovery tests (6 tests) | Prepared | Inject fault on a Part 3 copy, debug, fix, screenshots |
@@ -33,7 +33,7 @@ python3 run_tests.py
 
 Runs all Python suites, validates every JSON file (including the Part 1 template's embedded
 inner JSON), checks that every path referenced in `tracking/assessments.json` exists, and runs
-the Part 4 `.mjs` core test **if** Node is installed. Expected: `overall : PASS` with 138
+the Part 4 `.mjs` core test **if** Node is installed. Expected: `overall : PASS` with 159
 Python tests. Exact commands and recorded results are in `tracking/test-execution-report.md`.
 
 Per-part, if you prefer:

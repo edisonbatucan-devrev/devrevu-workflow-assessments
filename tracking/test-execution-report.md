@@ -17,8 +17,8 @@ and runs the Part 4 `.mjs` core test if Node is present.
 Observed summary:
 
 ```
-python tests        : PASS   (138 ran, 0 failures/errors)
-json validity       : PASS   (9 files)
+python tests        : PASS   (159 ran, 0 failures/errors)
+json validity       : PASS   (10 files)
 reference paths     : PASS
 node .mjs core test : SKIPPED (node not on PATH; Python twin covers the same logic)
 overall             : PASS
@@ -28,7 +28,7 @@ overall             : PASS
 
 | Part | Command | Result |
 |------|---------|--------|
-| 2 | `python3 -m unittest discover -s part2-ai-classify-router/code -p 'test_*.py'` | Ran 63 tests - OK |
+| 2 | `python3 -m unittest discover -s part2-ai-classify-router/code -p 'test_*.py'` | Ran 84 tests - OK (classification + title validators, derived-route tests, and the Part 2 template-structure suite `test_part2_template.py`) |
 | 3 | `python3 -m unittest discover -s part3-http-work-create/code -p 'test_*.py'` | Ran 52 tests - OK |
 | 4 (Python twin) | `cd part4-business-hours-snapin/code/test && python3 -m unittest test_business_hours_core` | Ran 17 tests - OK |
 | 5 | `cd part5-monitoring-debug/code && python3 -m unittest test_fault_injection` | Ran 6 tests - OK |
