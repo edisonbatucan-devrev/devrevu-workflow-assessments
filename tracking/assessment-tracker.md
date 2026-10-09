@@ -52,48 +52,46 @@ the priority-update step (no verified exposed priority field), so this requireme
 recorded complete only on Edison's explicit confirmation; the priority sub-requirement remains
 `manual-pending`.
 
-## Part 2 - AI classification + Router  -  ASSESSMENT-ALIGNED (3 routes); import PENDING
+## Part 2 - AI classification + Router  -  DIRECT candidate; local checks only, live import PENDING
 
-This is a **requirements-alignment correction**, not a claim that the import is fixed. The
-template now matches the exercise text literally:
+The current candidate is the **direct Ask AI -> Router** template, with no Execute Code steps:
 
-- Template: `../part2-ai-classify-router/templates/11-Part 2-template.json` (title
-  **`Part 2 - Code validation (3-route aligned)`**, 13 steps). Flow:
-  `Ticket Created -> Ask AI -> Execute Code validator -> Router (EXACTLY 3 routes)`.
-- The `validate_classification` Execute Code node runs BEFORE the Router. On a clean, in-enum
-  result it emits `route` = the accepted label; on **any** malformed/unknown/empty output it
-  **RAISES `ValueError`** (stops the run - shown as failed in the Runs tab). **No 4th Review
-  route** and **no silent mutation** on bad AI output.
-- Router has **exactly 3 named routes** (Bug/Feature/Enhancement) matching the validator enum.
-  Bug -> severity high + `bug_validate_title` Code node + internal invalid-title comment.
-  Feature/Enhancement -> severity medium **unconditionally** (the earlier no-downgrade gates
-  were removed). Classification-justification internal comment on **all 3 paths**.
-- **Removed deviations:** the 4th "Review" route, the "AI validator" review branch, and the
-  Feature/Enhancement no-downgrade If/Else gates are gone.
-- Both `invoke_code` `code` fields are value type **`text_template`** (matches the real export
-  sample `../15-Part 2 - validation issue-template-2.json`).
-- **NOT verified:** the Code `input_values`/`output_schema` field shapes are the reference-docs
-  **candidate**, not confirmed by that bare export; the Ask AI / Router export shapes are not
-  independently verified. A LIVE sandbox import + re-export round-trip has **NOT** been run.
-- **Status:** **ASSESSMENT CANDIDATE - import still UNVERIFIED.** Locally structure-validated
-  (`test_part2_template.py`: exactly 3 routes, validator code raises `ValueError`,
-  Feature/Enhancement set medium with no gate, Bug sets high, no dangling `$get`, no cycles,
-  internal comments, severity enum, no hardcoded DON; `test_classification_validator.py`:
-  strict function returns an enum route and raises on invalid). REQUIRED before publish: filter
-  the trigger to a dedicated Part 2 sandbox test part. **Do NOT publish** unless the live import
-  + round-trip succeeds and no Code/comments are dropped.
-- The pre-repair literal-code edition is archived (do not import) at
-  `../part2-ai-classify-router/templates/archive/11-Part 2-code-validation.UNVERIFIED.json`.
-  `check_import_roundtrip.py` + its synthetic unittests remain in the passing local suite. See
-  `../part2-ai-classify-router/IMPORT-DIAGNOSIS.md` and `BUILD-GUIDE.md`.
+- Template: `../part2-ai-classify-router/templates/11-Part 2-direct-router.template.json` (title
+  **`Part 2 - Direct AI Router (regex validation)`**). Flow:
+  `Ticket Created -> Ask AI -> Router (EXACTLY 3 routes)`.
+- Ask AI returns two lines (a category line + a `Justification:` line). The Router has **exactly
+  3 named routes** (Bug/Feature/Enhancement), each matched by a JSONata `$match` regex on the AI
+  output. Bug -> severity high + a native `if_else` JSONata `$match` regex title check
+  (`^\[BUG\] .{5,120}$`) + internal invalid-title comment. Feature/Enhancement -> severity
+  medium. Internal classification-justification comment on each accepted path.
+- Malformed AI output matches no route and performs no branch action - a Completed run with no
+  route taken is **not** success; inspect the actual AI output and route in the Runs tab.
+- All comments internal; all object/id targeting is dynamic
+  `$get('ticket_created_1','output').id` (no hardcoded DON). Bug title format is a stated lab
+  convention, not an assessment requirement.
+- **NOT verified:** a LIVE sandbox import, dynamic Router port behavior, and JSONata `$match`
+  evaluation inside Router/if_else conditions. Confirm with the builder's Validate action.
+- **Status:** **CANDIDATE - import/execution UNVERIFIED.** Locally structure-validated only
+  (`../tests/part2/test_direct_router_template.py`: Ask AI wired directly to Router, exactly 3
+  routes with matching ports, no `invoke_code`/validator references, reachable/acyclic, no
+  dangling `$get`, Bug=high and the other two `update_ticket` steps=medium, severity enum
+  lowercase, single `if_else` with true/false ports, internal comments, no hardcoded DON, plus
+  Python equivalents of the routing/Bug-title regex samples). REQUIRED before publish: filter the
+  trigger to a dedicated Part 2 sandbox test part. **Do NOT publish** unless the live import +
+  Validate succeed. Build/verify notes: `../part2-ai-classify-router/build.md`.
+- The shared `../tools/check_import_roundtrip.py` + its synthetic unittests
+  (`../tests/test_import_roundtrip.py`) remain in the passing local suite; after a live import,
+  re-export and run the checker (candidate vs re-export) - it must PASS.
 
 ## Parts 3-5 - Prepared, sandbox build / live validation pending
 
-Each part ships runnable local artifacts (code + tests or a clearly-labeled build-spec) and a
-BUILD-GUIDE. Nothing in Parts 3-5 has been deployed or live-run; reviewer and run links are null.
+Each part ships runnable local artifacts (code + tests or a clearly-labeled build map/spec).
+Nothing in Parts 3-5 has been deployed or live-run; reviewer and run links are null.
 - **Part 3 - HTTP works.create + reverse severity**: request builder, response validator,
-  severity reverse, duplicate/notify policy, all unit-tested; build-spec + synthetic sample
-  response. Build / live-test / evidence: pending.
+  severity reverse, duplicate/notify policy, all unit-tested (`../tests/part3/test_part3.py`);
+  build map `../part3-http-work-create/build.json`, narrative
+  `../part3-http-work-create/build.md`. The real `works.create` response field path must be
+  captured live (no committed sample). Build / live-test / evidence: pending.
 - **Part 4 - Business Hours Validator snap-in**: dependency-free core (`.mjs` + `.ts` twins) with
   a Python semantic-parity twin that is actually executed here; candidate manifest and SDK
   adapter marked explicitly as not compiled/CLI-validated. Build / live-test / evidence: pending.

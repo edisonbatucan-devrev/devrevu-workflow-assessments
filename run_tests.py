@@ -3,7 +3,9 @@
 
 Runs everything that can be verified locally with ONLY the Python standard library:
 
-  1. Python unit tests for Parts 2, 3, 4 (twin), and 5.
+  1. Python unit tests: shared import round-trip checker (tests/), Part 2 direct-router
+     template structure (tests/part2/), Part 3 code (tests/part3/), the Part 4 Python twin,
+     and Part 5 fault-injection.
   2. JSON validity for every *.json file (including the embedded Part 1 template inner JSON).
   3. Reference-path existence: every build_spec / importable_artifact / manifest_candidate
      path named in tracking/assessments.json must exist on disk.
@@ -25,8 +27,9 @@ import unittest
 ROOT = os.path.abspath(os.path.dirname(__file__))
 
 PY_TEST_DIRS = [
-    "part2-ai-classify-router/code",
-    "part3-http-work-create/code",
+    "tests",                             # shared: import round-trip checker tests
+    "tests/part2",                       # Part 2 direct-router template structure + regex samples
+    "tests/part3",                       # Part 3 request/response/reverse/notify unit tests
     "part4-business-hours-snapin/code/test",
     "part5-monitoring-debug/code",
 ]

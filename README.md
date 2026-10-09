@@ -15,16 +15,13 @@ tracking. Sandbox org for all live work: `edison-org-for-test`
   complete (by Edison) - though the exercise's **priority-field update** is not satisfied by the
   starter template (it is omitted and must be added in the sandbox against a real priority
   field), so that sub-requirement is **manual-pending**, not verified.
-- **Part 2 is now ASSESSMENT-ALIGNED to the exercise text:** Ticket Created -> Ask AI ->
-  Execute Code validator (BEFORE the Router; emits an enum `route` on valid, **raises
-  `ValueError` and stops the run on invalid**) -> Router with **exactly 3 named routes**
-  (Bug/Feature/Enhancement). Bug -> severity High + Execute Code title validation + internal
-  invalid-title comment. Feature/Enhancement -> severity Medium **unconditionally**.
-  Classification-justification comment on **all 3 paths**. The earlier 4th "Review" route and
-  the no-downgrade gates were removed. This is a **requirements-alignment correction, not a
-  claim the import is fixed** - a live sandbox import / re-export round-trip has NOT been run,
-  and the Code `input_values`/`output_schema` shapes are a reference-docs candidate.
-  **Parts 3-5 are "Prepared - sandbox build/live validation pending"**.
+- **Part 2 is a direct Ask AI -> Router candidate:** Ticket Created -> Ask AI -> Router with
+  **exactly 3 named routes** (Bug/Feature/Enhancement), **no Execute Code steps**. Bug ->
+  severity High + a native JSONata `$match` regex title check + internal invalid-title comment.
+  Feature/Enhancement -> severity Medium. Internal classification-justification comment on each
+  accepted path. This is **locally graph-validated only** - a live sandbox import, dynamic
+  Router ports, and JSONata regex evaluation are **UNVERIFIED**; nothing here claims it imports
+  or runs. **Parts 3-5 are "Prepared - sandbox build/live validation pending"**.
 - No official DevRevU LMS pass/score is recorded here, because none was provided.
 - See `ASSESSMENT-ALIGNMENT.md` for a per-requirement checklist (requirement -> file -> status).
 
@@ -33,8 +30,8 @@ Package vs deployed, at a glance:
 | Part | In this repo | Status | Needs a human in the sandbox |
 |------|--------------|--------|------------------------------|
 | 1 - Severity branching | Importable draft-starter template + guide + screenshots | **Completed (user-confirmed)** | Non-blocker comment + real priority-field screenshots to finish the optional checklist |
-| 2 - AI classify + Router | ASSESSMENT-ALIGNED IMPORT template (`templates/11-Part 2-template.json`, 13 steps, exactly 3 routes, validator raises on invalid, both `code` fields `text_template`), `classification_validator` (strict `run_strict` + optional Review variant) + `title_validator` (code + tests), import round-trip checker + tests, Ask AI prompt, build-spec | **Assessment-aligned - import/re-export validation pending** | Import the aligned template, re-export, run the round-trip check (must PASS), then live-test. The `input_values`/`output_schema` Code-field shapes are a reference-docs candidate, not confirmed by the bare export sample |
-| 3 - HTTP works.create | request builder / response validator / reverse / notify-gate (code + 52 tests), build-spec | Prepared | Capture real response shape, deploy, live-test, screenshots |
+| 2 - AI classify + Router | Direct Ask AI -> Router candidate template (`templates/11-Part 2-direct-router.template.json`, exactly 3 routes, native JSONata `$match` regex, no Code steps) + `build.md` + `checklist.md`; structure/regex tests in `tests/part2/` | **Prepared (candidate) - live import/validation pending** | Import the template, Validate (confirm Ask AI -> Router + 3 ports + `$match` conditions), re-export and run the round-trip check, then live-test |
+| 3 - HTTP works.create | request builder / response validator / reverse / notify-gate (`code/` + 52 tests in `tests/part3/`), `build.md` + `build.json` | Prepared | Capture real response shape, deploy, live-test, screenshots |
 | 4 - Business Hours snap-in | dependency-free core (`.mjs`+`.ts`) + Python twin (17 tests), candidate manifest + adapter | Prepared (candidate) | Resolve scopes, compile, CLI-validate, deploy, live-test, screenshots |
 | 5 - Monitoring/debug | fault-injection build-spec + Python fault/recovery tests (6 tests) | Prepared | Inject fault on a Part 3 copy, debug, fix, screenshots |
 
@@ -46,16 +43,15 @@ python3 run_tests.py
 
 Runs all Python suites, validates every JSON file (including the Part 1 template's embedded
 inner JSON), checks that every path referenced in `tracking/assessments.json` exists, and runs
-the Part 4 `.mjs` core test **if** Node is installed. Expected: `overall : PASS` with 190
+the Part 4 `.mjs` core test **if** Node is installed. Expected: `overall : PASS` with 107
 Python tests. Exact commands and recorded results are in `tracking/test-execution-report.md`.
-Note: `check_import_roundtrip.py` run against the real failed Part 2 export is EXPECTED to
-exit 1 - that is diagnostic evidence of the import loss, not a `run_tests.py` failure.
 
-Per-part, if you prefer:
+Per-suite, if you prefer:
 
 ```bash
-python3 -m unittest discover -s part2-ai-classify-router/code -p 'test_*.py' -v
-python3 -m unittest discover -s part3-http-work-create/code  -p 'test_*.py' -v
+python3 -m unittest discover -s tests        -p 'test_*.py' -v   # shared round-trip checker
+python3 -m unittest discover -s tests/part2  -p 'test_*.py' -v   # Part 2 direct-router template
+python3 -m unittest discover -s tests/part3  -p 'test_*.py' -v   # Part 3 code
 ( cd part4-business-hours-snapin/code/test && python3 -m unittest test_business_hours_core -v )
 ( cd part5-monitoring-debug/code && python3 -m unittest test_fault_injection -v )
 # Part 4 deployed core (needs Node 18+; the Python twin above covers the same logic):
@@ -72,13 +68,16 @@ node part4-business-hours-snapin/code/test/business_hours.core.test.mjs
 - **Public-repo safety** - synthetic samples/placeholders only; `.gitignore` excludes `.env`,
   tokens, caches and build dirs; `.DS_Store`/`__pycache__` are not committed.
 
-## 4. Why some parts are build-specs, not importable files
+## 4. Why some parts are build maps, not importable files
 
-The import/export field shapes for the **Ask AI, Router, HTTP, and notification** nodes are
-**not verified** for this org. Rather than ship importable files that would silently fail or
-mislead, those steps are delivered as clearly-labeled **build-spec JSON** (`*.build-spec.json`)
-describing exactly what to configure in the Workflow Builder. Only steps whose export shape is
-known appear inside the importable Part 1 `*.template.json`.
+The import/export field shapes for the **HTTP and notification** nodes (Part 3) and the
+snap-in (Part 4) are **not verified** for this org. Rather than ship importable files that
+would silently fail or mislead, those are delivered as clearly-labeled **build maps**
+(`part3-http-work-create/build.json`, `part4-business-hours-snapin/workflow.build-spec.json`,
+`part5-monitoring-debug/build-specs/fault-injection.build-spec.json`) describing exactly what
+to configure in the Workflow Builder. The Part 1 and Part 2 workflows ship as importable
+`*.template.json` wrappers; the Part 2 direct-router template is a **candidate whose live
+import is unverified** (see `part2-ai-classify-router/build.md`).
 
 Template wrapper format: `{ "data": "<stringified inner JSON>", "templateVersion": "2.0.0" }`,
 where the inner JSON holds `description`, `serialization_version {2,0,0}`, `steps[]`, `title`.
@@ -101,10 +100,12 @@ README.md                     <- this file
 IMPROVEMENTS.md               <- what changed in this revision + remaining live prerequisites
 run_tests.py                  <- standard-library test + integrity runner
 .gitignore
+tools/                        <- shared helpers (check_import_roundtrip.py)
+tests/                        <- centralized Python tests: test_import_roundtrip.py, part2/, part3/
 tracking/                     <- assessments.json, assessment-tracker.md, test-execution-report.md
 part1-ticket-severity-branch/ <- importable template + guide + screenshots (Edison-confirmed)
-part2-ai-classify-router/     <- validators + tests + Ask AI prompt + build-spec
-part3-http-work-create/       <- request/response/reverse/notify code + tests + build-spec
+part2-ai-classify-router/     <- build.md + checklist.md + direct-router template + screenshots
+part3-http-work-create/       <- build.md + checklist.md + build.json + request/response/reverse/notify code
 part4-business-hours-snapin/  <- core (.mjs/.ts) + Python twin + tests + candidate manifest/adapter
 part5-monitoring-debug/       <- fault-injection build-spec + fault/recovery tests
 ```

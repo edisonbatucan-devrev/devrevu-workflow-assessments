@@ -18,11 +18,16 @@ Covers:
 import copy
 import json
 import os
+import sys
 import unittest
 
-import check_import_roundtrip as chk
-
+# The round-trip checker now lives at the repo-root tools/ directory (shared across parts).
 HERE = os.path.dirname(os.path.abspath(__file__))
+_TOOLS = os.path.abspath(os.path.join(HERE, "..", "tools"))
+if _TOOLS not in sys.path:
+    sys.path.insert(0, _TOOLS)
+
+import check_import_roundtrip as chk  # noqa: E402
 
 
 def inner_template():

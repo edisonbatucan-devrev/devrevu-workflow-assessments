@@ -2,8 +2,8 @@
 
 Capture in `edison-org-for-test`; save real images here (no fabrication).
 
-- [ ] `canvas-router-3-paths.png` - full canvas showing the Router node with 3 named paths
-      (+ default).
+- [ ] `canvas-router-3-paths.png` - full canvas showing Ticket Created -> Ask AI -> Router
+      with exactly 3 named paths (Bug/Feature/Enhancement).
 - [ ] `bug-ticket-severity-and-validation.png` - a Bug ticket with severity auto-set to
       High and the validation (invalid-title) comment.
 - [ ] `feature-ticket-classification.png` - a Feature ticket with the classification
