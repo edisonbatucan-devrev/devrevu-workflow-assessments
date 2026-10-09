@@ -1,5 +1,5 @@
 {
-  "_comment": "BUILD-SPEC ONLY - NOT an importable workflow template. The export/import field shapes for Ask AI and Router nodes are NOT verified for this org, so this file describes what to configure in the Workflow Builder UI step by step. Steps whose shape IS known (ticket_created, if_else, update_ticket, add_comment, invoke_code) use the real operation slugs so you can cross-check. edison-org-for-test ONLY; set the trigger part filter before publishing.",
+  "_comment": "BUILD-SPEC ONLY - NOT an importable workflow template. ASSESSMENT-ALIGNED EDITION. The live artifact is templates/11-Part 2-template.json (title 'Part 2 - Code validation (3-route aligned)'). Flow: Ticket Created -> Ask AI (structured JSON {classification,justification}) -> Execute Code validator (invoke_code) BEFORE the Router -> Router with EXACTLY 3 named routes (Bug/Feature/Enhancement). The validator uses the STRICT entrypoint (run_strict in ../code/classification_validator.py): on a clean in-enum result it emits route = the accepted label; on ANY invalid/malformed/unknown output it RAISES ValueError, which STOPS the run (no 4th Review route, no silent mutation). Bug -> severity high + Execute Code title validation + internal invalid-title comment. Feature/Enhancement -> severity medium UNCONDITIONALLY (no no-downgrade gate). Every path posts an internal classification-justification comment. The Code 'code' input is value type text_template (matches a real Execute Code export sample from this org). The Code input_values/output_schema shapes and the Ask AI/Router export shapes are reference-docs CANDIDATES, NOT live-verified; configure/cross-check them in the Workflow Builder UI. SECURITY: never eval/exec, never $eval the untrusted AI string. edison-org-for-test ONLY; set the trigger part filter before publishing. ASSESSMENT CANDIDATE - a live import + re-export round-trip is still PENDING; do not call this import-ready.",
   "part": 2,
   "title": "DevRevU Part 2 - AI classify + Router",
   "org": "edison-org-for-test",
@@ -34,39 +34,31 @@
       "node_type": "devrev/invoke_code",
       "import_shape_known": true,
       "code_source": "../code/classification_validator.py",
-      "code_field_hint": "Paste the module as a literal 'code' field. Entry function run(inputs, keyrings).",
-      "purpose": "Validate the (non-deterministic, untrusted) Ask AI output into a strongly-typed, safe decision BEFORE routing. Never mutates. Returns approved + requires_review so the Router sends only clean, in-enum results to a main path and everything else to the review fallback.",
+      "code_field_hint": "Paste the module as a 'code' field (value type text_template). Entry function run_strict(inputs, keyrings) - the ALIGNED strict variant.",
+      "purpose": "Validate the (non-deterministic, untrusted) Ask AI output BEFORE routing. On a clean in-enum result it emits route = the accepted label. On ANY invalid/malformed/unknown/empty-justification output it RAISES ValueError, which STOPS the run (no 4th Review route, no mutation). Never mutates, never eval/exec, never $eval the AI string.",
       "inputs": {
-        "ai_output": "$get('ask_ai_classify','output')",
-        "confidence_threshold": "0.75 (DESIGN ASSUMPTION - exercise defines no confidence contract; confidence is optional and only gated if present)"
+        "ai_output": "$get('ask_ai_classify','output').ai_output"
       },
       "output_schema_literal": {
         "fields": [
-          { "name": "approved", "field_type": "bool", "is_required": true, "is_filterable": false, "description": "True only for a clean, exact-enum, well-formed result" },
-          { "name": "requires_review", "field_type": "bool", "is_required": true, "is_filterable": false, "description": "Negation of approved; route these to the review fallback - no mutation" },
-          { "name": "classification", "field_type": "text", "is_required": true, "is_filterable": false, "description": "Accepted label (Bug/Feature/Enhancement) or empty when requires_review" },
-          { "name": "justification", "field_type": "text", "is_required": true, "is_filterable": false, "description": "Trimmed justification or empty when requires_review" },
-          { "name": "confidence", "field_type": "text", "is_required": true, "is_filterable": false, "description": "Stringified confidence or empty if not present" },
-          { "name": "reason", "field_type": "text", "is_required": true, "is_filterable": false, "description": "Bounded, safe reason; never leaks raw input" }
+          { "name": "route", "field_type": "text", "is_required": true, "is_filterable": false, "description": "Accepted label the Router branches on: Bug/Feature/Enhancement" },
+          { "name": "classification", "field_type": "text", "is_required": true, "is_filterable": false, "description": "Same accepted label (for comment templates)" },
+          { "name": "justification", "field_type": "text", "is_required": true, "is_filterable": false, "description": "Trimmed justification" }
         ]
       },
-      "notes": "Enum is matched EXACTLY (case-sensitive) against Bug/Feature/Enhancement. Malformed JSON, unknown label, empty/oversized justification, or a present-but-invalid/low confidence all return requires_review=true with a safe reason - never a mutation."
+      "notes": "Enum matched EXACTLY (case-sensitive) against Bug/Feature/Enhancement. Malformed JSON, unknown label, or empty justification RAISE ValueError (run fails) - the exercise's Router has exactly 3 paths, so bad output stops the run rather than routing to a 4th branch. OPTIONAL non-failing alternative: the module's validate_classification/run return a requires_review Review result instead; documented as a non-default safety variant."
     },
     {
       "step": "router_classification",
       "node_type": "Router",
       "import_shape_known": false,
-      "purpose": "Branch into exactly 3 mutually-exclusive named main routes PLUS a review fallback, based on the VALIDATED output; first-match-only.",
+      "purpose": "Branch into EXACTLY 3 mutually-exclusive named routes based on the validated route enum. The validator raises on everything else, so no fallback route is needed.",
       "routes": [
-        { "name": "Bug", "match": "approved == true AND classification == 'Bug'" },
-        { "name": "Feature", "match": "approved == true AND classification == 'Feature'" },
-        { "name": "Enhancement", "match": "approved == true AND classification == 'Enhancement'" }
+        { "name": "Bug", "match": "$get('validate_classification','output').route contains_any ['Bug']" },
+        { "name": "Feature", "match": "$get('validate_classification','output').route contains_any ['Feature']" },
+        { "name": "Enhancement", "match": "$get('validate_classification','output').route contains_any ['Enhancement']" }
       ],
-      "default_route": {
-        "name": "Review",
-        "behavior": "REVIEW FALLBACK - taken whenever requires_review == true (malformed/unknown/low-confidence). Post an internal diagnostic comment quoting validate_classification.reason. NO severity mutation and NO other object change on this path (safe handling of non-deterministic / malformed AI output)."
-      },
-      "notes": "Only an APPROVED classification routes to one of the 3 main paths. Router slug/config is NOT verified for this org - configure the 3 named routes + the Review fallback in the UI. Do NOT invent import config."
+      "notes": "EXACTLY 3 named routes - NO 4th Review route. Router slug/config is NOT independently verified for this org - configure the 3 named routes in the UI. Do NOT invent import config."
     },
     {
       "step": "bug_set_severity",
@@ -111,7 +103,7 @@
       "step": "feature_set_severity",
       "node_type": "devrev/update_ticket",
       "import_shape_known": true,
-      "downgrade_gate": "Only set severity=medium if the current severity is NOT already a higher band (blocker/high). Guard with an If/Else on $get('ticket_created_1','output').severity: if it is 'blocker' or 'high', SKIP the update and instead post an internal comment noting the existing higher severity was retained. This prevents the workflow from silently DOWNGRADING an existing blocker/high ticket just because the AI labeled it Feature.",
+      "note": "Set severity=medium UNCONDITIONALLY (no no-downgrade gate) - matches the exercise exactly.",
       "inputs": {
         "id": { "type": "jsonata_expression", "value": "$get('ticket_created_1','output').id" },
         "severity": { "type": "literal", "value": "medium" }
@@ -121,29 +113,17 @@
       "step": "enhancement_set_severity",
       "node_type": "devrev/update_ticket",
       "import_shape_known": true,
-      "downgrade_gate": "Same no-downgrade guard as feature_set_severity: skip the medium set when the current severity is already 'blocker' or 'high'.",
+      "note": "Set severity=medium UNCONDITIONALLY (no no-downgrade gate) - matches the exercise exactly.",
       "inputs": {
         "id": { "type": "jsonata_expression", "value": "$get('ticket_created_1','output').id" },
         "severity": { "type": "literal", "value": "medium" }
       }
     },
     {
-      "step": "review_fallback_comment",
-      "node_type": "devrev/add_comment",
-      "import_shape_known": true,
-      "condition": "Router Review fallback (requires_review == true)",
-      "note": "Diagnostic ONLY. No severity change, no other mutation on the review path.",
-      "inputs": {
-        "object": { "type": "jsonata_expression", "value": "$get('ticket_created_1','output').id" },
-        "visibility": { "type": "literal", "value": "internal" },
-        "body": { "type": "text_template", "value": "AI classification needs review: {% expr $get('validate_classification','output').reason %} No severity change was applied." }
-      }
-    },
-    {
       "step": "justification_comment_all_paths",
       "node_type": "devrev/add_comment",
       "import_shape_known": true,
-      "note": "Post on EVERY accepted path (Bug, Feature, Enhancement). This satisfies 'post a classification justification comment on all paths'. The Review fallback posts its own diagnostic comment (review_fallback_comment) instead. Quote the VALIDATED output (validate_classification), not the raw AI output, so the comment reflects exactly what was accepted.",
+      "note": "Post on EVERY path (Bug, Feature, Enhancement) - each path has its own comment step in the template (bug_justification_comment / feature_justification_comment / enhancement_justification_comment). Satisfies 'post a classification justification comment on all paths'. Quote the VALIDATED output (validate_classification), not the raw AI output.",
       "inputs": {
         "object": { "type": "jsonata_expression", "value": "$get('ticket_created_1','output').id" },
         "visibility": { "type": "literal", "value": "internal" },
@@ -152,8 +132,10 @@
     }
   ],
   "design_notes": {
-    "no_downgrade_gate": "IMPROVEMENT over the literal exercise behavior: the exercise says Feature/Enhancement -> severity Medium unconditionally. Setting Medium on a ticket that is already blocker/high would be a silent DOWNGRADE driven by a non-deterministic AI label. The feature_set_severity / enhancement_set_severity steps therefore gate the Medium set behind an If/Else that SKIPS the update when the current severity is already blocker or high, and posts an internal note instead. This differs from the literal assessment wording and is documented as a deliberate safety improvement.",
-    "assessment_mode_option": "If the grader expects the LITERAL behavior (always set Medium on Feature/Enhancement), set an 'assessment_mode' boolean on the workflow: when true, remove the downgrade gate and set Medium unconditionally to match the exercise text exactly. Default is the safer gated behavior.",
-    "approved_only_routing": "Only validate_classification.approved == true reaches a main path; requires_review == true always goes to the Review fallback with no mutation."
+    "three_routes_only": "The exercise's Router has EXACTLY three named paths (Bug/Feature/Enhancement). The aligned template keeps exactly those three and no 4th fallback.",
+    "raise_on_invalid": "The validator (run_strict) RAISES ValueError on any malformed/unknown/empty-justification AI output, which STOPS the run (shown as a failed run in the Runs tab). This replaces the earlier 4th 'Review' route and guarantees no severity mutation on bad AI output.",
+    "feature_enhancement_unconditional_medium": "Feature/Enhancement set severity=medium UNCONDITIONALLY, matching the exercise. The earlier no-downgrade If/Else gates were removed.",
+    "optional_review_variant": "The module's validate_classification/run functions still return a non-failing requires_review 'Review' result; this is an OPTIONAL safety alternative, documented separately, and is NOT wired into the aligned template.",
+    "security": "The validator never uses eval/exec and never runs JSONata $eval on the untrusted AI string. Untrusted title/body are delimited and treated as DATA in the Ask AI prompt."
   }
 }

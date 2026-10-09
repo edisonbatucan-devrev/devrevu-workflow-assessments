@@ -22,14 +22,26 @@ fixed:
   concise optional `acceptance_checklist` with real statuses (`live`/`prepared`/`pending`),
   preserving the semantics and Edison's confirmed completion. Reviewer/run links stay `null`.
 
-## Part 2 - AI classification gate hardened
+## Part 2 - ASSESSMENT-ALIGNED (exactly 3 routes) + hardened classification gate
 
-- `_coerce_structured` now **strictly rejects** Markdown code fences (```` ```json ```` ),
+- **Alignment to the exercise text.** The template now has **exactly 3 named Router routes**
+  (Bug/Feature/Enhancement). The earlier 4th "Review" route and the Feature/Enhancement
+  **no-downgrade gates** were **removed**; Feature/Enhancement set severity Medium
+  **unconditionally**. The Execute Code validator runs BEFORE the Router and on **any** invalid
+  output **raises `ValueError`** (stopping the run) instead of routing to a 4th path - a
+  strict `run_strict` entrypoint was added for this. The optional non-failing Review-emitting
+  variant (`validate_classification`/`run`) is retained and documented as a non-default safety
+  alternative.
+- `_coerce_structured` **strictly rejects** Markdown code fences (```` ```json ```` ),
   prose-prefixed/trailing output, and any non-object JSON - with a documented reason, not an
-  incidental parse error. Field values are never eval'd/executed.
-- New tests: fenced/bare-fence/prose-wrapped rejection; label injected as list/number/null/
-  nested object; adversarial instructions inside the justification are treated as inert data;
-  attempted label override via justification has no effect. **63 tests pass** (was 52).
+  incidental parse error. Field values are never eval'd/executed, and the validator never runs
+  JSONata `$eval` on the untrusted AI string.
+- Tests cover: fenced/bare-fence/prose-wrapped rejection; label injected as list/number/null/
+  nested object; adversarial instructions inside the justification treated as inert data; the
+  strict entrypoint returning an enum route and raising on invalid; and the aligned
+  template-structure suite (exactly 3 routes, no 4th Review route, validator raises
+  `ValueError`, Feature/Enhancement medium with no gate). **Part 2 suite: 115 tests pass**;
+  repo-wide **190 Python tests pass**.
 
 ## Part 3 - HTTP create/notify hardened
 

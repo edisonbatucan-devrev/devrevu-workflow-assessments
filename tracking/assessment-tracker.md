@@ -44,14 +44,53 @@ historical note, not a claim about the live runtime now.
 - Non-blocker branch posts a different comment - prepared (branch exists; no ticket screenshot).
 - Published and Active + successful run in Runs tab - evidenced (image.png, image-1.png).
 
-## Parts 2-5 - Prepared, sandbox build / live validation pending
+### Part 1 priority-field gap (explicit)
+The exercise requires a **priority field update** on the blocker branch; it is NOT satisfied by
+substituting severity. The importable starter `10-Part 1-template.json` deliberately **omits**
+the priority-update step (no verified exposed priority field), so this requirement is
+**not verified** - it must be added in the sandbox against a real priority field. Part 1 is
+recorded complete only on Edison's explicit confirmation; the priority sub-requirement remains
+`manual-pending`.
+
+## Part 2 - AI classification + Router  -  ASSESSMENT-ALIGNED (3 routes); import PENDING
+
+This is a **requirements-alignment correction**, not a claim that the import is fixed. The
+template now matches the exercise text literally:
+
+- Template: `../part2-ai-classify-router/templates/11-Part 2-template.json` (title
+  **`Part 2 - Code validation (3-route aligned)`**, 13 steps). Flow:
+  `Ticket Created -> Ask AI -> Execute Code validator -> Router (EXACTLY 3 routes)`.
+- The `validate_classification` Execute Code node runs BEFORE the Router. On a clean, in-enum
+  result it emits `route` = the accepted label; on **any** malformed/unknown/empty output it
+  **RAISES `ValueError`** (stops the run - shown as failed in the Runs tab). **No 4th Review
+  route** and **no silent mutation** on bad AI output.
+- Router has **exactly 3 named routes** (Bug/Feature/Enhancement) matching the validator enum.
+  Bug -> severity high + `bug_validate_title` Code node + internal invalid-title comment.
+  Feature/Enhancement -> severity medium **unconditionally** (the earlier no-downgrade gates
+  were removed). Classification-justification internal comment on **all 3 paths**.
+- **Removed deviations:** the 4th "Review" route, the "AI validator" review branch, and the
+  Feature/Enhancement no-downgrade If/Else gates are gone.
+- Both `invoke_code` `code` fields are value type **`text_template`** (matches the real export
+  sample `../15-Part 2 - validation issue-template-2.json`).
+- **NOT verified:** the Code `input_values`/`output_schema` field shapes are the reference-docs
+  **candidate**, not confirmed by that bare export; the Ask AI / Router export shapes are not
+  independently verified. A LIVE sandbox import + re-export round-trip has **NOT** been run.
+- **Status:** **ASSESSMENT CANDIDATE - import still UNVERIFIED.** Locally structure-validated
+  (`test_part2_template.py`: exactly 3 routes, validator code raises `ValueError`,
+  Feature/Enhancement set medium with no gate, Bug sets high, no dangling `$get`, no cycles,
+  internal comments, severity enum, no hardcoded DON; `test_classification_validator.py`:
+  strict function returns an enum route and raises on invalid). REQUIRED before publish: filter
+  the trigger to a dedicated Part 2 sandbox test part. **Do NOT publish** unless the live import
+  + round-trip succeeds and no Code/comments are dropped.
+- The pre-repair literal-code edition is archived (do not import) at
+  `../part2-ai-classify-router/templates/archive/11-Part 2-code-validation.UNVERIFIED.json`.
+  `check_import_roundtrip.py` + its synthetic unittests remain in the passing local suite. See
+  `../part2-ai-classify-router/IMPORT-DIAGNOSIS.md` and `BUILD-GUIDE.md`.
+
+## Parts 3-5 - Prepared, sandbox build / live validation pending
 
 Each part ships runnable local artifacts (code + tests or a clearly-labeled build-spec) and a
-BUILD-GUIDE. Nothing in Parts 2-5 has been deployed or live-run; reviewer and run links are null.
-
-- **Part 2 - AI classification + Router**: `classification_validator` + `title_validator`
-  Execute Code modules with full unittests; Ask AI prompt; build-spec for the Router topology.
-  Build / live-test / evidence: pending.
+BUILD-GUIDE. Nothing in Parts 3-5 has been deployed or live-run; reviewer and run links are null.
 - **Part 3 - HTTP works.create + reverse severity**: request builder, response validator,
   severity reverse, duplicate/notify policy, all unit-tested; build-spec + synthetic sample
   response. Build / live-test / evidence: pending.

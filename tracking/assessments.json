@@ -5,7 +5,7 @@
   "org_url": "https://app.devrev.ai/edison-org-for-test",
   "generated_on": "2026-10-08",
   "tracking_scope": "Tracking lives in this repository only. Statuses reflect what is prepared and locally verifiable in this repo; they are NOT a claim of a passed or submitted LMS assessment. No official LMS pass/score is recorded because none was provided.",
-  "overall_status": "Part 1 completed - confirmed by Edison. Parts 2-5 prepared - sandbox build/live validation pending.",
+  "overall_status": "Part 1 completed - confirmed by Edison (the priority-field update sub-requirement remains manual-pending: the starter template omits it and it must be configured against a real priority field in the sandbox). Part 2 ASSESSMENT-ALIGNED to the exercise text: Ticket Created -> Ask AI -> Execute Code validator (BEFORE the Router; emits an enum `route` on valid, RAISES ValueError and stops the run on invalid) -> Router with EXACTLY 3 named routes (Bug/Feature/Enhancement); Bug -> severity high + title Code validation + internal invalid-title comment; Feature/Enhancement -> severity medium UNCONDITIONALLY; classification-justification comment on all 3 paths. The earlier 4th 'Review' route and the no-downgrade gates were REMOVED. This is a requirements-alignment correction, NOT a claim the import is fixed: a live sandbox import / re-export round-trip has NOT been run, and the Code input_values/output_schema shapes are a reference-docs candidate. Parts 3-5 prepared - sandbox build/live validation pending.",
   "repo_url": "https://github.com/edisonbatucan-devrev/devrevu-workflow-assessments",
   "legend": {
     "verification_status": "live = evidenced by a screenshot/run in this repo; prepared = code/config/spec ready, no live run captured here; pending = needs a human in the sandbox.",
@@ -76,23 +76,53 @@
     {
       "id": "part2",
       "name": "AI classification + Router",
-      "status": "Prepared - sandbox build/live validation pending",
+      "status": "Assessment-aligned (exactly 3 routes, validator raises on invalid, Feature/Enhancement medium unconditionally); import/re-export validation PENDING",
       "code_prepared": true,
       "importable_artifact": "part2-ai-classify-router/templates/11-Part 2-template.json",
-      "importable_artifact_note": "Candidate IMPORT-format template (same export wrapper the Workflow Builder emits: templateVersion 2.0.0, serialization_version {2,0,0}, title 'Part 2'). Fully connected graph wired from the actual repo code/prompt. LOCALLY structure-validated (see code/test_part2_template.py) - a LIVE sandbox import has NOT been run. The Ask AI/Router saved-config fields that are hidden/required-at-import for this org are not independently verified; no defaults were invented. Before publishing, set the Ticket Created trigger filter to a dedicated Part 2 sandbox test part.",
+      "importable_artifact_note": "ASSESSMENT-ALIGNED IMPORT template (export wrapper templateVersion 2.0.0, serialization_version {2,0,0}, title 'Part 2 - Code validation (3-route aligned)', 13 steps). Both invoke_code `code` input fields are value type text_template (matching a real Execute Code export sample from this org, 15-Part 2 - validation issue-template-2.json, kept at the workdir root). Flow: Ticket Created -> Ask AI (structured JSON {classification,justification}) -> Execute Code validator (validate_classification) BEFORE the Router: on a clean in-enum result it emits route = the accepted label; on ANY invalid/malformed/unknown/empty output it RAISES ValueError, which STOPS the run (no 4th Review route, no mutation) -> Router with EXACTLY 3 named routes (Bug/Feature/Enhancement) matching the validator route enum. Bug path: severity high + Execute Code title validator (bug_validate_title) + If/Else + internal invalid-title comment. Feature/Enhancement: severity medium UNCONDITIONALLY (no no-downgrade gate). Classification-justification internal comment on all 3 paths. The earlier 4th Review route and the no-downgrade gates were REMOVED. All comments internal; all object/id targeting is dynamic $get('ticket_created_1','output').id (no hardcoded DON). NOT verified: the Code input_values (mapped Code inputs) and output_schema (typed Code outputs) shapes are the available reference-docs candidate, not confirmed by the bare export sample; the Ask AI/Router export shapes are not independently verified. LOCALLY structure-validated (code/test_part2_template.py: EXACTLY 3 routes, no 4th Review route, validator code raises ValueError, Feature/Enhancement set medium with no gate, Bug sets high, both `code` fields text_template, reachable/acyclic, all $get refs resolve, internal comments, severity enum, no hardcoded DON; code/test_classification_validator.py: strict function returns an enum route and raises on invalid). A LIVE sandbox import / re-export round-trip has NOT been run - this is NOT a proven pass; do not call it import-ready. The pre-repair literal-code edition is archived at part2-ai-classify-router/templates/archive/11-Part 2-code-validation.UNVERIFIED.json (do not import). Root-level deliverable: Part2-assessment-aligned-template.json (identical to the repo template).",
       "build_spec": "part2-ai-classify-router/build-specs/part2-classify-router.build-spec.json",
-      "locally_tested": "Python validators (classification + title) and the Part 2 template-structure suite (reachability/no-cycles/route-name->edges/ports/no-hardcoded-IDs/enum policy/embedded code compiles): all unittests passing locally (see tracking/test-execution-report.md for the exact count).",
+      "locally_tested": "The rewritten Part 2 full-Code template-structure suite (code/test_part2_template.py: both `code` fields text_template, invoke_code validators present, Code outputs referenced not dangling), the standalone Python validators (classification + title) and their tests, and the import round-trip checker's synthetic unittests (code/test_import_roundtrip.py, now including a literal->text_template value-type regression) all pass locally (see tracking/test-execution-report.md for the count). Separately, running code/check_import_roundtrip.py on the HISTORICAL EXPECTED Code edition (Part2-corrected-template.json) vs the real failed export (14-Part 2-template.json) still FAILS (exit 1) by design - that documents the original pre-repair Code-node drop and is retained as a diagnostic, not a test regression. These are LOCAL structure/round-trip checks only, not a live import-compatibility test; do NOT compare the repaired template to itself and call it a live pass.",
+      "import_roundtrip_check": {
+        "tool": "part2-ai-classify-router/code/check_import_roundtrip.py",
+        "expected_template": "part2-ai-classify-router/templates/11-Part 2-template.json",
+        "exported_after_import_sample": "user-provided '14-Part 2-template.json' (kept at workdir root for reproducibility; not committed into the repo)",
+        "expected_template_note": "HISTORICAL diagnostic. The EXPECTED side is the PRE-REPAIR Execute Code edition (Part2-corrected-template.json at the workdir root; its inner data left unchanged so this still reproduces the original drop). This historical check compares that old template against the real failed export (14-Part 2-template.json); it is NOT a comparison of the repaired current template against itself and is NOT a live pass. The CURRENT artifact is the repaired full Code edition (templates/11-Part 2-template.json, both `code` fields text_template).",
+        "result": "FAIL (exit 1) - EXPECTED, documents the ORIGINAL Code-node import loss (historical)",
+        "dropped_reference_keys": ["validate_classification", "bug_validate_title", "bug_justification_comment", "feature_justification_comment", "enhancement_justification_comment"],
+        "dangling_get_references": ["validate_classification", "bug_validate_title"],
+        "missing_edge_count": 10,
+        "caveat": "LOCAL structural comparison only; does NOT simulate the DevRev importer and is NOT proof of live import compatibility. The compatibility edition was adopted BECAUSE the root cause of this drop was never verified."
+      },
       "review": { "reviewer": null, "run": null, "result": "not_reviewed" },
       "links": { "workflow": null, "version": null, "run": null, "evidence": null },
       "subtasks": [
-        { "id": "p2-build", "title": "Import or build Ask AI -> classification_validator Execute Code -> Router (3 paths) + review fallback. A candidate IMPORT template now exists (templates/11-Part 2-template.json); build-spec is the companion UI map.", "verification_status": "pending", "evidence": null },
-        { "id": "p2-config", "title": "Configure Execute Code node outputs to match OUTPUT_FIELDS exactly; bind Ask AI output + ticket title into node inputs", "verification_status": "pending", "evidence": null },
-        { "id": "p2-live-test", "title": "Live-test a Bug ticket (severity High + title validation comment) and a Feature ticket (classification comment)", "verification_status": "pending", "evidence": null },
+        { "id": "p2-build", "title": "Import the ASSESSMENT-ALIGNED template (templates/11-Part 2-template.json): Ask AI -> Execute Code validator (validate_classification, strict run_strict - raises on invalid) -> Router with EXACTLY 3 routes (Bug/Feature/Enhancement) -> Bug path with Execute Code title validator (bug_validate_title) + If/Else + invalid-title comment; Feature/Enhancement set medium unconditionally; justification comment on all 3 paths. Both `code` fields are text_template.", "verification_status": "pending", "evidence": null },
+        { "id": "p2-config", "title": "Confirm the two Execute Code nodes import with their code bodies intact and that their outputs are typed/mapped (output_schema is a reference-docs candidate - re-map if the import strips it). Confirm the 3 Router routes and the Bug-title If/Else evaluate as expected, and that an invalid classification FAILS the run (no 4th path).", "verification_status": "pending", "evidence": null },
+        { "id": "p2-live-test", "title": "Live-test a Bug ticket (severity High + title validation comment), a Feature ticket (severity Medium + classification comment), and a malformed/unknown classification (run fails in the Runs tab, no mutation)", "verification_status": "pending", "evidence": null },
         { "id": "p2-evidence", "title": "Screenshots: full canvas with Router 3 paths, Bug ticket, Feature ticket", "verification_status": "pending", "evidence": null }
       ],
       "blockers": [
-        "Candidate IMPORT template is locally structure-validated but a LIVE sandbox import has NOT been run; Ask AI / Router hidden-or-required-at-import saved-config fields for this org are not independently verified (no defaults invented).",
-        "Bug title format is a stated ASSUMPTION (^\\[BUG\\] .{5,120}$); adjust in-sandbox if the grader expects a different format."
+        "LIVE sandbox import / re-export round-trip of the repaired template has NOT been run - import compatibility is PENDING; this is NOT a proven pass.",
+        "The invoke_code `input_values` (mapped Code inputs) and `output_schema` (typed Code outputs) shapes are a reference-docs candidate - the real export sample was a BARE Code node (only the `code` field) and does NOT confirm those shapes. Re-map Code outputs in the sandbox if a live import strips them.",
+        "PROVEN delta applied: both Execute Code `code` fields changed from literal to text_template (matching the real export sample). Other possible import-sensitive fields (output_schema omission) are not independently verified and may still need in-sandbox adjustment.",
+        "Bug title format is a stated ASSUMPTION (^\\[BUG\\] .{5,120}$); adjust in-sandbox if the grader expects a different format.",
+        "REQUIRED before publish: set the Ticket Created trigger filter to a dedicated Part 2 sandbox test part (the unfiltered default is NOT sandbox-safe)."
+      ],
+      "follow_ups": [
+        {
+          "id": "p2-followup-live-import",
+          "title": "Live-import the repaired full Code template in the sandbox, re-export, and run the round-trip check + test matrix",
+          "status": "pending_live_capture",
+          "blocking_completion": true,
+          "note": "Import templates/11-Part 2-template.json into edison-org-for-test, set the trigger part filter, re-export, and run code/check_import_roundtrip.py (aligned template vs fresh re-export) - it must PASS. Then run the test matrix (Bug valid/invalid title, Feature->medium, Enhancement->medium, injection ignored, malformed/unknown classification -> run FAILS with no mutation). Confirm both Execute Code nodes survived with intact bodies and typed outputs; re-map outputs if output_schema was stripped. A local structure check is NOT a substitute for this live import."
+        },
+        {
+          "id": "p2-followup-confidence-tradeoff",
+          "title": "Decide whether the native-regex tradeoff is acceptable vs re-introducing a Code node",
+          "status": "pending",
+          "blocking_completion": false,
+          "note": "If the grader requires confidence gating / bounded-length trimming / typed validator outputs, a real saved Execute Code export (Ticket Created -> Execute Code -> Add Comment) would be needed to re-introduce the Code node with a verified import shape. The retained Python validators (classification_validator.py / title_validator.py) and the archived Code template document that alternative plan."
+        }
       ]
     },
     {
