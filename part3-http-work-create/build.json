@@ -1,5 +1,5 @@
 {
-  "_comment": "BUILD-SPEC ONLY - NOT an importable template. HTTP node and notification node export shapes are NOT verified for this org. Configure in the UI from this map. edison-org-for-test ONLY; set the trigger part filter + severity filter before publishing.",
+  "_comment": "BUILD CONFIGURATION ONLY - NOT an importable workflow template. The HTTP node and notification node export shapes are NOT verified for this org; build this in the Workflow Builder UI from this map. edison-org-for-test ONLY; set the trigger part filter AND severity filter before publishing. The Execute Code bodies are in code/ (build_request.py, validate_response.py, reverse_severity.py, notify_policy.py) and are covered by tests/part3/test_part3.py.",
   "part": 3,
   "title": "DevRevU Part 3 - HTTP works.create + reverse severity",
   "org": "edison-org-for-test",
@@ -13,7 +13,7 @@
       "step": "build_request",
       "node_type": "devrev/invoke_code",
       "import_shape_known": true,
-      "code_source": "../code/build_request.py",
+      "code_source": "code/build_request.py",
       "inputs_binding": {
         "ticket_id": "$get('ticket_created_1','output').id",
         "title": "$get('ticket_created_1','output').title",
@@ -37,13 +37,13 @@
       "auth": "Use an ACTIVE sandbox Auth Token CONNECTION (Bearer). NEVER paste a raw token into the node or this repo.",
       "body": "$get('build_request','output').body",
       "idempotency": "Body carries external_ref 'devrevu-p3:<ticket id>' to MITIGATE duplicates (not exactly-once). Prefer: check for an existing work with that external_ref BEFORE create, or handle a 409 conflict explicitly. Do NOT blindly POST-retry.",
-      "response_capture": "Capture status_code and the full JSON body in the node outputs. Configure the DOWNSTREAM output mapping from an ACTUAL captured sandbox response (see sample-response.PLACEHOLDER.json)."
+      "response_capture": "Capture status_code and the full JSON body in the node outputs. Configure the DOWNSTREAM output mapping from an ACTUAL captured sandbox response - the real works.create response field path for work.id/display_id MUST be verified in the sandbox (no committed sample)."
     },
     {
       "step": "validate_response",
       "node_type": "devrev/invoke_code",
       "import_shape_known": true,
-      "code_source": "../code/validate_response.py",
+      "code_source": "code/validate_response.py",
       "inputs_binding": {
         "status_code": "$get('http_works_create','output').status_code",
         "response_body": "$get('http_works_create','output').body"
@@ -55,7 +55,7 @@
       "step": "reverse_severity",
       "node_type": "devrev/invoke_code",
       "import_shape_known": true,
-      "code_source": "../code/reverse_severity.py",
+      "code_source": "code/reverse_severity.py",
       "inputs_binding": { "severity": "$get('ticket_created_1','output').severity" },
       "outputs": ["reversed (text)", "original (text)"]
     },
@@ -92,9 +92,10 @@
       "step": "notify_owner",
       "node_type": "Notification",
       "import_shape_known": false,
+      "code_source": "code/notify_policy.py",
       "recipient": "$get('ticket_created_1','output').owned_by (ticket owner)",
       "message": "{% expr $get('validate_response','output').display_id %} has been created for your ticket.",
-      "notes": "Use the real display_id from the validated response. Notification node export shape is NOT verified - configure in UI."
+      "notes": "notify_policy.py enforces 'notify only after a verified create' and produces the exact message/comment bodies. Use the real display_id from the validated response. Notification node export shape is NOT verified - configure in UI."
     }
   ]
 }

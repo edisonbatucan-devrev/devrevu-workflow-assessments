@@ -22,26 +22,25 @@ fixed:
   concise optional `acceptance_checklist` with real statuses (`live`/`prepared`/`pending`),
   preserving the semantics and Edison's confirmed completion. Reviewer/run links stay `null`.
 
-## Part 2 - ASSESSMENT-ALIGNED (exactly 3 routes) + hardened classification gate
+## Part 2 - direct Ask AI -> Router candidate (lean cleanup)
 
-- **Alignment to the exercise text.** The template now has **exactly 3 named Router routes**
-  (Bug/Feature/Enhancement). The earlier 4th "Review" route and the Feature/Enhancement
-  **no-downgrade gates** were **removed**; Feature/Enhancement set severity Medium
-  **unconditionally**. The Execute Code validator runs BEFORE the Router and on **any** invalid
-  output **raises `ValueError`** (stopping the run) instead of routing to a 4th path - a
-  strict `run_strict` entrypoint was added for this. The optional non-failing Review-emitting
-  variant (`validate_classification`/`run`) is retained and documented as a non-default safety
-  alternative.
-- `_coerce_structured` **strictly rejects** Markdown code fences (```` ```json ```` ),
-  prose-prefixed/trailing output, and any non-object JSON - with a documented reason, not an
-  incidental parse error. Field values are never eval'd/executed, and the validator never runs
-  JSONata `$eval` on the untrusted AI string.
-- Tests cover: fenced/bare-fence/prose-wrapped rejection; label injected as list/number/null/
-  nested object; adversarial instructions inside the justification treated as inert data; the
-  strict entrypoint returning an enum route and raising on invalid; and the aligned
-  template-structure suite (exactly 3 routes, no 4th Review route, validator raises
-  `ValueError`, Feature/Enhancement medium with no gate). **Part 2 suite: 115 tests pass**;
-  repo-wide **190 Python tests pass**.
+- The current candidate is the **direct Ask AI -> Router** template
+  (`templates/11-Part 2-direct-router.template.json`) with **exactly 3 named routes**
+  (Bug/Feature/Enhancement) and **no Execute Code steps**. Bug -> severity High + a native
+  JSONata `$match` regex title check + internal invalid-title comment; Feature/Enhancement ->
+  severity Medium; internal classification-justification comment on each accepted path.
+- This cleanup revision removed the obsolete Code-based apparatus (the `invoke_code`
+  classification/title validators and their modules, the pre-repair archive template, the old
+  Code-edition build guide/import-diagnosis/build-spec/prompt). The current candidate does not
+  depend on any of them.
+- Part 2 build/verify notes are consolidated into `part2-ai-classify-router/build.md`; the
+  screenshot checklist moved to `part2-ai-classify-router/checklist.md`.
+- Local proof: `tests/part2/test_direct_router_template.py` (**22 tests**) validates the graph
+  (Ask AI -> Router, exactly 3 routes with matching ports, no `invoke_code`/validator
+  references, reachable/acyclic, no dangling `$get`, Bug=high + two medium, single `if_else`
+  with true/false ports, internal comments, no hardcoded DON) and the routing/Bug-title regex
+  samples. A live import, dynamic Router ports, and JSONata `$match` evaluation remain
+  UNVERIFIED. Repo-wide: **107 Python tests pass**.
 
 ## Part 3 - HTTP create/notify hardened
 
@@ -87,13 +86,16 @@ fixed:
   full `README.md` (basic -> deep, package-vs-deployed) and this `IMPROVEMENTS.md`.
 - Added `.gitignore` (excludes `.env`/tokens/caches/build dirs); removed the three tracked
   `.DS_Store` files for a clean public repo.
-- Corrected `text_template` markers in the Part 2/3/4 build-specs from `<% expr %>` to the
-  DevRev `{% expr %}` convention (the same defect fixed in the Part 1 template).
+- Centralized the Python tests under `tests/` (`tests/part2`, `tests/part3`, and the shared
+  `tests/test_import_roundtrip.py`) and moved the shared round-trip checker to
+  `tools/check_import_roundtrip.py`. Parts 4-5 keep their suites in place. `run_tests.py`
+  discovers the new locations; Part 5's tests still import Part 3's modules by relative path.
 
 ## Remaining live prerequisites (none done here - require a human in the sandbox)
 
 - Part 1: non-blocker-comment and real priority-field screenshots to close the optional checklist.
-- Part 2: build Ask AI + Router in the UI from the build-spec; live-test Bug/Feature; screenshots.
+- Part 2: import the direct-router template, Validate (Ask AI -> Router + 3 ports + `$match`
+  conditions), re-export and run the round-trip check, live-test Bug/Feature/Enhancement; screenshots.
 - Part 3: capture a real `works.create` response and configure the HTTP output mapping; set up a
   Bearer connection; live-test; screenshots.
 - Part 4: resolve candidate scopes, `snap_in init`, compile TS, CLI-validate the manifest, deploy,

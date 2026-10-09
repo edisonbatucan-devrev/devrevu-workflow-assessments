@@ -1,7 +1,16 @@
 import json
+import os
+import sys
 import unittest
 
-from build_request import (
+# Part 3's Execute Code modules live in the part folder; tests are centralized here.
+_PART3_CODE = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "part3-http-work-create", "code")
+)
+if _PART3_CODE not in sys.path:
+    sys.path.insert(0, _PART3_CODE)
+
+from build_request import (  # noqa: E402
     build_works_create_body,
     validate_endpoint,
     WORKS_CREATE_URL,
