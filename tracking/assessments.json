@@ -49,13 +49,59 @@
       "acceptance_checklist": {
         "scope": "Optional per-criterion verification. Overall Part 1 completion is user-confirmed and is not blocked by any pending item here.",
         "items": [
-          { "id": "p1-s01", "title": "Trigger is Ticket Created filtered to a dedicated test part before publishing", "verification_status": "pending", "evidence": null },
-          { "id": "p1-s02", "title": "Blocker branch updates a REAL exposed priority field (not priority_v2)", "verification_status": "pending", "evidence": null, "note": "Not visible as a distinct action in image.png; the blocker comment text notes the priority update is handled by a separate Update Ticket step to be configured." },
-          { "id": "p1-s03", "title": "Blocker branch posts an internal comment mentioning the creator via a dynamic variable", "verification_status": "live", "evidence": ["part1-ticket-severity-branch/screenshots/image-2.png"], "note": "image-2.png shows a resolved @edison-batucan mention in an internal comment." },
-          { "id": "p1-s04", "title": "Non-blocker branch posts a different internal comment", "verification_status": "prepared", "evidence": null, "note": "False/non-blocker branch exists on the canvas (image.png); no screenshot of a non-blocker ticket's comment is in this repo." },
-          { "id": "p1-s05", "title": "Workflow validated, published and Active", "verification_status": "live", "evidence": ["part1-ticket-severity-branch/screenshots/image.png"], "note": "image.png shows v1 Current and Active. The validation action itself is not separately screenshotted." },
-          { "id": "p1-s06", "title": "A successful run appears in the Runs tab", "verification_status": "live", "evidence": ["part1-ticket-severity-branch/screenshots/image-1.png"], "note": "WORKFLOW-10 / TKT-11 run is Completed." },
-          { "id": "p1-s07", "title": "Dynamic IDs confirmed (comment references the triggering ticket/creator, not hardcoded)", "verification_status": "pending", "evidence": null }
+          {
+            "id": "p1-s01",
+            "title": "Trigger is Ticket Created filtered to a dedicated test part before publishing",
+            "verification_status": "pending",
+            "evidence": null
+          },
+          {
+            "id": "p1-s02",
+            "title": "Blocker branch updates a REAL exposed priority field (not priority_v2)",
+            "verification_status": "pending",
+            "evidence": null,
+            "note": "Not visible as a distinct action in image.png; the blocker comment text notes the priority update is handled by a separate Update Ticket step to be configured."
+          },
+          {
+            "id": "p1-s03",
+            "title": "Blocker branch posts an internal comment mentioning the creator via a dynamic variable",
+            "verification_status": "live",
+            "evidence": [
+              "part1-ticket-severity-branch/screenshots/image-2.png"
+            ],
+            "note": "image-2.png shows a resolved @edison-batucan mention in an internal comment."
+          },
+          {
+            "id": "p1-s04",
+            "title": "Non-blocker branch posts a different internal comment",
+            "verification_status": "prepared",
+            "evidence": null,
+            "note": "False/non-blocker branch exists on the canvas (image.png); no screenshot of a non-blocker ticket's comment is in this repo."
+          },
+          {
+            "id": "p1-s05",
+            "title": "Workflow validated, published and Active",
+            "verification_status": "live",
+            "evidence": [
+              "part1-ticket-severity-branch/screenshots/image.png"
+            ],
+            "note": "image.png shows v1 Current and Active. The validation action itself is not separately screenshotted."
+          },
+          {
+            "id": "p1-s06",
+            "title": "A successful run appears in the Runs tab",
+            "verification_status": "live",
+            "evidence": [
+              "part1-ticket-severity-branch/screenshots/image-1.png"
+            ],
+            "note": "WORKFLOW-10 / TKT-11 run is Completed."
+          },
+          {
+            "id": "p1-s07",
+            "title": "Dynamic IDs confirmed (comment references the triggering ticket/creator, not hardcoded)",
+            "verification_status": "pending",
+            "evidence": null
+          }
         ]
       },
       "historical_observations": [
@@ -82,13 +128,42 @@
       "importable_artifact_note": "DIRECT candidate template (export wrapper templateVersion 2.0.0, serialization_version {2,0,0}, title 'Part 2 - Direct AI Router (regex validation)'). Flow: Ticket Created -> Ask AI (two-line text output: category line + Justification line) -> Router with EXACTLY 3 named routes (Bug/Feature/Enhancement), matched by JSONata $match regex on the AI output; NO Execute Code steps. Bug path: severity high + a native if_else JSONata $match regex title check (^\\[BUG\\] .{5,120}$) + internal invalid-title comment. Feature/Enhancement: severity medium. Internal classification-justification comment on each accepted path. All comments internal; all object/id targeting is dynamic $get('ticket_created_1','output').id (no hardcoded DON). Malformed AI output matches no route and performs no branch action - a Completed run with no route taken is NOT success; inspect the actual AI output and route in the Runs tab. Build/verify notes are in part2-ai-classify-router/build.md. LOCALLY structure-validated only (tests/part2/test_direct_router_template.py: Ask AI wired directly to Router, EXACTLY 3 routes with matching ports, no invoke_code/validator references, reachable/acyclic, all $get refs resolve, Bug=high and the other two update_ticket steps=medium, severity enum lowercase, single if_else with true/false ports, internal comments, no hardcoded DON, plus Python equivalents of the routing/Bug-title regex samples). A LIVE sandbox import, dynamic Router ports, and JSONata regex evaluation are UNVERIFIED - this is NOT a proven pass; do not call it import-ready. The Bug title format (^\\[BUG\\] .{5,120}$) is a stated lab convention, not an assessment requirement.",
       "build_spec": "part2-ai-classify-router/build.md",
       "locally_tested": "tests/part2/test_direct_router_template.py (direct-router template structure + regex-sample checks) and the shared import round-trip checker unittests (tests/test_import_roundtrip.py, run against tools/check_import_roundtrip.py) all pass locally - see tracking/test-execution-report.md for the count. These are LOCAL static/structural checks only; they do NOT execute DevRev's JSONata runtime or importer and are NOT a live import-compatibility test.",
-      "review": { "reviewer": null, "run": null, "result": "not_reviewed" },
-      "links": { "workflow": null, "version": null, "run": null, "evidence": null },
+      "review": {
+        "reviewer": null,
+        "run": null,
+        "result": "not_reviewed"
+      },
+      "links": {
+        "workflow": null,
+        "version": null,
+        "run": null,
+        "evidence": null
+      },
       "subtasks": [
-        { "id": "p2-build", "title": "Import templates/11-Part 2-direct-router.template.json as a NEW draft: confirm Ticket Created -> Ask AI -> Router with EXACTLY 3 named routes (Bug/Feature/Enhancement), Bug path with the native if_else regex title check + invalid-title comment, Feature/Enhancement -> medium, justification comment on each accepted path.", "verification_status": "pending", "evidence": null },
-        { "id": "p2-config", "title": "Set the Ticket Created trigger filter to a dedicated Part 2 sandbox test part. Validate in the builder; confirm the Ask AI -> Router connection, three named ports, and that the JSONata $match route/title conditions are accepted. If rejected, capture the exact error and the exported draft; do not publish.", "verification_status": "pending", "evidence": null },
-        { "id": "p2-live-test", "title": "Live-test a Bug ticket (valid and invalid title), a Feature ticket, and an Enhancement ticket; confirm severity, route taken, and internal comments in the Runs tab and ticket Discussions (AI output is non-deterministic - verify the output, not just run status).", "verification_status": "pending", "evidence": null },
-        { "id": "p2-evidence", "title": "Screenshots: full canvas (Ticket Created -> Ask AI -> Router 3 paths), a Bug ticket, a Feature ticket.", "verification_status": "pending", "evidence": null }
+        {
+          "id": "p2-build",
+          "title": "Import templates/11-Part 2-direct-router.template.json as a NEW draft: confirm Ticket Created -> Ask AI -> Router with EXACTLY 3 named routes (Bug/Feature/Enhancement), Bug path with the native if_else regex title check + invalid-title comment, Feature/Enhancement -> medium, justification comment on each accepted path.",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p2-config",
+          "title": "Set the Ticket Created trigger filter to a dedicated Part 2 sandbox test part. Validate in the builder; confirm the Ask AI -> Router connection, three named ports, and that the JSONata $match route/title conditions are accepted. If rejected, capture the exact error and the exported draft; do not publish.",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p2-live-test",
+          "title": "Live-test a Bug ticket (valid and invalid title), a Feature ticket, and an Enhancement ticket; confirm severity, route taken, and internal comments in the Runs tab and ticket Discussions (AI output is non-deterministic - verify the output, not just run status).",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p2-evidence",
+          "title": "Screenshots: full canvas (Ticket Created -> Ask AI -> Router 3 paths), a Bug ticket, a Feature ticket.",
+          "verification_status": "pending",
+          "evidence": null
+        }
       ],
       "blockers": [
         "LIVE sandbox import of the direct-router template has NOT been run - import compatibility is PENDING; this is NOT a proven pass.",
@@ -109,18 +184,47 @@
     {
       "id": "part3",
       "name": "HTTP works.create + reverse severity",
-      "status": "Prepared - sandbox build/live validation pending",
+      "status": "Import draft generated (grounded in public v2 examples) - live import/run UNVERIFIED; sandbox config + live validation pending",
       "code_prepared": true,
-      "importable_artifact": null,
+      "importable_artifact": "part3-http-work-create/templates/12-Part 3-template.json",
       "build_spec": "part3-http-work-create/build.json",
       "locally_tested": "Python request builder, response validator, severity reverse and duplicate/notify policy (code in part3-http-work-create/code/): all unittests passing locally in tests/part3/test_part3.py (see test-execution-report.md). Build map is part3-http-work-create/build.json; narrative is part3-http-work-create/build.md.",
-      "review": { "reviewer": null, "run": null, "result": "not_reviewed" },
-      "links": { "workflow": null, "version": null, "run": null, "evidence": null },
+      "review": {
+        "reviewer": null,
+        "run": null,
+        "result": "not_reviewed"
+      },
+      "links": {
+        "workflow": null,
+        "version": null,
+        "run": null,
+        "evidence": null
+      },
       "subtasks": [
-        { "id": "p3-build", "title": "Build: Ticket Created (low) -> build_request Execute Code -> HTTPS works.create HTTP node -> validate_response -> reverse_severity -> add comment on issue -> notify owner", "verification_status": "pending", "evidence": null },
-        { "id": "p3-config", "title": "Capture a REAL works.create response in the sandbox and configure the HTTP node output mapping + validate_response field path from the real shape", "verification_status": "pending", "evidence": null },
-        { "id": "p3-live-test", "title": "Live-test with a low-severity ticket; confirm issue created, reversed-severity comment on the issue, and owner notification", "verification_status": "pending", "evidence": null },
-        { "id": "p3-evidence", "title": "Screenshots: workflow configuration, ticket+issue comments, Events tab history", "verification_status": "pending", "evidence": null }
+        {
+          "id": "p3-build",
+          "title": "Build: Ticket Created (low) -> build_request Execute Code (default-safe preflight) -> HTTPS works.create HTTP node (Bearer) -> validate_response -> reverse_severity -> add comment on issue -> add comment on ticket -> notify_policy -> native if_else gate -> send_notification. Importable draft at templates/12-Part 3-template.json (live import UNVERIFIED).",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p3-config",
+          "title": "Capture a REAL works.create response in the sandbox and configure the HTTP node output mapping + validate_response field path from the real shape",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p3-live-test",
+          "title": "Live-test with a low-severity ticket; confirm issue created, reversed-severity comment on the issue, and owner notification",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p3-evidence",
+          "title": "Screenshots: workflow configuration, ticket+issue comments, Events tab history",
+          "verification_status": "pending",
+          "evidence": null
+        }
       ],
       "blockers": [
         "HTTP + notification node import/export shapes not verified - build in UI from the build-spec.",
@@ -137,13 +241,42 @@
       "build_spec": "part4-business-hours-snapin/workflow.build-spec.json",
       "manifest_candidate": "part4-business-hours-snapin/code/manifest.example.yaml",
       "locally_tested": "Business-hours core: dependency-free Node test file present. NOTE: Node is NOT installed in the authoring environment, so these tests were NOT executed here; a Python semantic-parity twin + tests cover the same logic and DID run. SDK adapter + manifest are CANDIDATES, not compiled/CLI-validated.",
-      "review": { "reviewer": null, "run": null, "result": "not_reviewed" },
-      "links": { "workflow": null, "version": null, "run": null, "evidence": null },
+      "review": {
+        "reviewer": null,
+        "run": null,
+        "result": "not_reviewed"
+      },
+      "links": {
+        "workflow": null,
+        "version": null,
+        "run": null,
+        "evidence": null
+      },
       "subtasks": [
-        { "id": "p4-build", "title": "snap_in init, resolve candidate scopes, CLI-validate manifest, compile TS adapter", "verification_status": "pending", "evidence": null },
-        { "id": "p4-config", "title": "Register the custom operation; verify event/context accessors against the installed SDK version", "verification_status": "pending", "evidence": null },
-        { "id": "p4-live-test", "title": "Deploy; build an If/Else workflow on is_within_business_hours; test one within-hours and one outside-hours run", "verification_status": "pending", "evidence": null },
-        { "id": "p4-evidence", "title": "Screenshots: node in action list, config panel, full workflow, within-hours run, outside-hours run", "verification_status": "pending", "evidence": null }
+        {
+          "id": "p4-build",
+          "title": "snap_in init, resolve candidate scopes, CLI-validate manifest, compile TS adapter",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p4-config",
+          "title": "Register the custom operation; verify event/context accessors against the installed SDK version",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p4-live-test",
+          "title": "Deploy; build an If/Else workflow on is_within_business_hours; test one within-hours and one outside-hours run",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p4-evidence",
+          "title": "Screenshots: node in action list, config panel, full workflow, within-hours run, outside-hours run",
+          "verification_status": "pending",
+          "evidence": null
+        }
       ],
       "blockers": [
         "service_account.scopes.self and operation static_scopes are CANDIDATES - resolve + CLI-validate (TODO-VERIFY-SCOPES).",
@@ -160,14 +293,48 @@
       "importable_artifact": null,
       "build_spec": "part5-monitoring-debug/build-specs/fault-injection.build-spec.json",
       "locally_tested": "Python fault-injection tests prove validate_response RAISES on the injected fault / non-2xx and that the fixed path recovers from a synthetic 2xx response (see test-execution-report.md). Non-live; reuses Part 3 code only, no duplicated comment/notify logic.",
-      "review": { "reviewer": null, "failed_run": null, "fixed_run": null, "result": "not_reviewed" },
-      "links": { "failed_run": null, "fixed_run": null, "evidence": null },
+      "review": {
+        "reviewer": null,
+        "failed_run": null,
+        "fixed_run": null,
+        "result": "not_reviewed"
+      },
+      "links": {
+        "failed_run": null,
+        "fixed_run": null,
+        "evidence": null
+      },
       "subtasks": [
-        { "id": "p5-copy", "title": "Duplicate the Part 3 workflow in the sandbox (copy)", "verification_status": "pending", "evidence": null },
-        { "id": "p5-inject", "title": "Inject a deterministic fault (bad endpoint + validator raise, or an injected raise); publish the faulty version", "verification_status": "pending", "evidence": null },
-        { "id": "p5-debug", "title": "Trigger it, find the failed run, inspect the failed node, read the AI (sparkle) explanation", "verification_status": "pending", "evidence": null },
-        { "id": "p5-fix", "title": "Fix, publish a new version, re-trigger and confirm success", "verification_status": "pending", "evidence": null },
-        { "id": "p5-evidence", "title": "Screenshots: failed run, node error detail with AI explanation, fixed run completing", "verification_status": "pending", "evidence": null }
+        {
+          "id": "p5-copy",
+          "title": "Duplicate the Part 3 workflow in the sandbox (copy)",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p5-inject",
+          "title": "Inject a deterministic fault (bad endpoint + validator raise, or an injected raise); publish the faulty version",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p5-debug",
+          "title": "Trigger it, find the failed run, inspect the failed node, read the AI (sparkle) explanation",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p5-fix",
+          "title": "Fix, publish a new version, re-trigger and confirm success",
+          "verification_status": "pending",
+          "evidence": null
+        },
+        {
+          "id": "p5-evidence",
+          "title": "Screenshots: failed run, node error detail with AI explanation, fixed run completing",
+          "verification_status": "pending",
+          "evidence": null
+        }
       ],
       "blockers": [
         "Requires a deployed Part 3 copy. A bare non-2xx may NOT fail the run on its own - rely on the validate_response raise or a deterministic injected raise."

@@ -1,5 +1,5 @@
 {
-  "_comment": "BUILD CONFIGURATION ONLY - NOT an importable workflow template. The HTTP node and notification node export shapes are NOT verified for this org; build this in the Workflow Builder UI from this map. edison-org-for-test ONLY; set the trigger part filter AND severity filter before publishing. The Execute Code bodies are in code/ (build_request.py, validate_response.py, reverse_severity.py, notify_policy.py) and are covered by tests/part3/test_part3.py.",
+  "_comment": "BUILD CONFIGURATION MAP (node-by-node). An importable v2 template is ALSO generated at templates/12-Part 3-template.json (via tools/gen_template.py), grounded in the public shashankcube/computer-skill v2 examples. That template is an IMPORT DRAFT: live import/run is UNVERIFIED (never claim it was imported). After import you MUST (1) select an active sandbox Bearer Auth Token CONNECTION on the HTTP node, (2) set the safety guard constants in the two Execute Code nodes (ALLOW_LIVE_CREATE / EXPECTED_PART_ID / EXPECTED_TEST_OWNER_ID in build_request; ALLOW_OWNER_NOTIFICATION / EXPECTED_TEST_OWNER_ID in notify_policy), and (3) filter the trigger to the dedicated Part 3 test part AND severity == 'low'. edison-org-for-test ONLY. The Execute Code bodies are in code/ (build_request.py, validate_response.py, reverse_severity.py, notify_policy.py) and are covered by tests/part3/test_part3.py; the template embeds grounded copies of those bodies PLUS default-safe preflight/notify guards. The works.create response field path for work.id/display_id is NOT verified - confirm it against a REAL sandbox capture.",
   "part": 3,
   "title": "DevRevU Part 3 - HTTP works.create + reverse severity",
   "org": "edison-org-for-test",
@@ -27,7 +27,7 @@
     {
       "step": "http_works_create",
       "node_type": "HTTP",
-      "import_shape_known": false,
+      "import_shape_known": "serialization grounded in public v2 example (working-csat http_1); LIVE import/run still UNVERIFIED",
       "method": "POST",
       "url": "https://api.devrev.ai/works.create",
       "headers": {
@@ -90,12 +90,13 @@
     },
     {
       "step": "notify_owner",
-      "node_type": "Notification",
-      "import_shape_known": false,
+      "node_type": "devrev/send_notification (gated by a native devrev/if_else)",
+      "import_shape_known": "serialization grounded in public v2 examples (working-loop send_notification_1 + working-csat if_else_1); LIVE import/run still UNVERIFIED",
       "code_source": "code/notify_policy.py",
-      "recipient": "$get('ticket_created_1','output').owned_by (ticket owner)",
-      "message": "{% expr $get('validate_response','output').display_id %} has been created for your ticket.",
-      "notes": "notify_policy.py enforces 'notify only after a verified create' and produces the exact message/comment bodies. Use the real display_id from the validated response. Notification node export shape is NOT verified - configure in UI."
+      "recipient": "$get('ticket_created_1','output').owned_by[0].id (ticket owner, dynamic)",
+      "message": "{% expr $get('notify_policy_1','output').notification %} (resolves to '<ISS display_id> has been created for your ticket.')",
+      "default_safe_gate": "In the generated template, notify_policy_1 outputs should_notify=False by default; a native if_else (notify_gate_1) only routes to send_notification on the TRUE branch (should_notify == true). The FALSE branch ends safely with NO notification. Enable by setting ALLOW_OWNER_NOTIFICATION=True AND EXPECTED_TEST_OWNER_ID to your own user DON in the notify_policy node.",
+      "notes": "notify_policy.py enforces 'notify only after a verified create' and produces the exact message/comment bodies. If your org's send_notification/if_else import differs, configure in UI as the remaining gap."
     }
   ]
 }

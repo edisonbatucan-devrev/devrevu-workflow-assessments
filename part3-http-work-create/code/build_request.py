@@ -11,8 +11,10 @@ Design notes / preflight bounds:
   256 is a conservative preflight guard the caller can raise). owned_by must be a NON-EMPTY
   list of non-empty string DONs; applies_to_part must be a non-empty string.
 - Adds external_ref 'devrevu-p3:<ticket id>' to MITIGATE duplicate creation. This does NOT
-  guarantee exactly-once; see duplicate_policy.py + the response validator + guide for the
-  "lookup-before-create / handle 409 conflict" discussion. Do NOT blindly POST-retry.
+  guarantee exactly-once; see validate_response.py (409 conflict handling +
+  verify_conflict_is_same_source) and notify_policy.py (notify-only-after-verified-create
+  gate) for the "lookup-before-create / handle 409 conflict" discussion. Do NOT blindly
+  POST-retry.
 - OPTIONAL scope check: if the caller passes expected_org_id, we assert the provided owner /
   part DONs are consistent with it ONLY as a sanity check. We NEVER fabricate an org id and
   there is NO default - DON scoping is validated EXTERNALLY in the sandbox; this is a best-
