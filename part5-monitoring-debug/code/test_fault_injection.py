@@ -1,14 +1,14 @@
 """Part 5 - local fault-injection + recovery tests (NON-live).
 
-These tests prove the two things Part 5 asks for, WITHOUT any live API call and WITHOUT
-duplicating Part 3's logic:
+These tests check exception handling and recovery with synthetic input. They do not
+prove hosted workflow state, an AI explanation, or published-version recovery.
 
-  1. The injected fault makes the run FAIL. We reuse Part 3's `validate_response` exactly as
-     the workflow does. Both documented fault options are covered:
-       - Option A (wrong endpoint): the HTTP node returns a non-2xx (e.g. 404) and
-         validate_works_create RAISES, so the run is marked failed at the validator node.
-       - Option B (deterministic raise): a `raise` injected at the top of the validator body
-         is simulated here and must propagate.
+They reuse Part 3's logic without any live API call:
+
+  1. The injected fault makes the validator raise. No workflow engine runs here.
+     Both documented fault options are simulated:
+       - Option A: a scripted non-success response (e.g. 404) is rejected.
+       - Option B: a deterministic injected exception propagates.
      We also show the endpoint allow-list in build_request rejects the Part 5 typo URL before
      any request is even sent.
 
