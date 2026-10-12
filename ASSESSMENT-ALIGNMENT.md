@@ -73,21 +73,24 @@ Optional guards retained (safe-on-bad-input stops that do not alter the required
 `validate_response.py` (429/409 handling), `verify_conflict_is_same_source`, notify-before-
 verify gate. `validate_endpoint` rejects the Part 5 typo path and non-HTTPS/wrong host.
 
-## Part 4 - Snap-in development (Advanced)  -  import-blocked / manual-pending
+## Part 4 - Snap-in development (Advanced)  -  local-verified; live deploy/run NOT verified
 
 | Requirement | File / path | Status |
 |---|---|---|
-| Snap-in with custom operation (3P node) "Business Hour Validator" | `part4-business-hours-snapin/code/manifest.example.yaml` (`display_name: Business Hour Validator`) | import-blocked (candidate manifest, NOT deployed) |
-| `manifest.yaml` with operation inputs/outputs | `manifest.example.yaml` - inputs `org_schedule_id`,`timestamp`; outputs `is_within_business_hours`,`next_open_time`,`evaluated_at` | import-blocked (candidate shape, named `.example` on purpose) |
-| TypeScript function implementing the logic | `code/src/core/business_hours.core.ts` (+ tested `.mjs` + Python twin); `code/src/functions/business_hours_validator/index.ts` | local-prepared (TS not compiled here - no `tsc`/Node) |
-| Declare scopes for `org-schedules.evaluate/get/list` | `manifest.example.yaml` candidate scope `org_schedule:read`, marked `TODO(VERIFY-SCOPES)` | import-blocked - exact scope slug NOT confirmed |
-| Within hours -> live agent; outside hours -> auto-reply `We're currently offline. We'll get back to you at {{next_open_time}}.` | `BUILD-GUIDE.md` workflow section + `workflow.build-spec.json` | local-prepared (auto-reply text matches) |
-| Test locally and **deploy** | `BUILD-GUIDE.md` build/deploy steps marked "This step was not run here." | manual-pending (candidate vs actual manifest; not deployed) |
+| Snap-in with custom operation (3P node) "Business Hour Validator" | `part4-business-hours-snapin/code/manifest.example.yaml` (`display_name: Business Hour Validator`) | local-verified (manifest remotely validated; NOT deployed) |
+| `manifest.yaml` with operation inputs/outputs | `manifest.example.yaml` - inputs `org_schedule_id`,`timestamp`; outputs `is_within_business_hours`,`next_open_time`,`evaluated_at` | local-verified (named `.example` on purpose; not an active manifest) |
+| TypeScript function implementing the logic | `code/src/core/business_hours.core.ts` (+ `.mjs` + Python twin); `code/src/functions/business_hours_validator/index.ts` | local-verified (`npm run build` compiles clean against SDK v1.1.79; core 18 + adapter 12 + Python twin 17 pass, all MOCKED) |
+| Declare scopes for `org-schedules.evaluate/get/list` | `manifest.example.yaml` scope `org_schedule:read` | local-verified (manifest + scopes **remotely** validated "Manifest is valid" Oct 12 2026; not a deploy) |
+| Within hours -> live agent; outside hours -> auto-reply `We're currently offline. We'll get back to you at {{next_open_time}}.` | `BUILD-GUIDE.md` workflow section + `workflow.build-spec.json` | local-prepared (auto-reply text matches); live run manual-pending |
+| Test locally and **deploy** | `BUILD-GUIDE.md` build/deploy steps marked "not run here" | local tests done; **deploy/live run manual-pending** |
 
-Honest distinction: the `.mjs`/Python core logic is unit-tested here (17 Python-twin tests);
-the SDK adapter + manifest are explicit **candidates** pending a Node + `@devrev/typescript-sdk`
-+ DevRev CLI environment. The actual deployed manifest/scopes are not claimed. Testing of live
-hours and offline-time text is specified in the BUILD-GUIDE test matrix.
+Honest distinction: the TypeScript adapter + core now **compile locally** against the
+installed `@devrev/typescript-sdk` v1.1.79, and the core (18), adapter (12), and Python twin
+(17) tests pass - but these are **SIMULATED/MOCKED** (in-memory fake schedule, injected
+`fetch`), not a live evaluation. The manifest/scopes passed a **remote** server-side validation
+(not part of the strictly-local proof). The actual `snap_in_version` create/deploy and the live
+Conversation Created workflow run are **NOT done** and not claimed. No DevRevU LMS/certification
+is claimed.
 
 ## Part 5 - Monitoring and debugging (Bonus)  -  local-prepared / manual-pending
 
@@ -113,6 +116,7 @@ Part 4 (Python twin) = 17, Part 5 = 6. See `tracking/test-execution-report.md`.
 - No workflow deployed, no live run, no screenshots captured by this process.
 - No live import / Validate for the Part 2 direct-router template; dynamic Router ports and
   JSONata `$match` evaluation are unverified.
-- Part 1 priority-field update not verified; Part 4 snap-in not deployed and scope slugs not
-  confirmed.
+- Part 1 priority-field update not verified. Part 4 compiles and tests locally (MOCKED) and
+  its manifest/scopes passed a remote validation, but the snap-in is **not deployed** and the
+  live workflow was **not run**.
 - No git commit/push; no org tools/APIs invoked.

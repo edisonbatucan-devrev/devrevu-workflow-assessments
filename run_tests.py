@@ -6,7 +6,7 @@ Runs everything that can be verified locally with ONLY the Python standard libra
   1. Python unit tests: shared import round-trip checker (tests/), Part 2 direct-router
      template structure (tests/part2/), Part 3 code (tests/part3/), the Part 4 Python twin,
      and Part 5 fault-injection.
-  2. JSON validity for every *.json file (including the embedded Part 1 template inner JSON).
+  2. Project JSON validity, excluding dependencies/build output (also parses template inner JSON).
   3. Reference-path existence: every build_spec / importable_artifact / manifest_candidate
      path named in tracking/assessments.json must exist on disk.
   4. Node detection: if `node` is on PATH, also runs the Part 4 .mjs core test; otherwise it
@@ -54,8 +54,8 @@ def check_all_json():
     bad = []
     checked = 0
     for dirpath, dirnames, filenames in os.walk(ROOT):
-        if ".git" in dirpath:
-            continue
+        # Installed dependencies and generated output are not project JSON evidence.
+        dirnames[:] = [name for name in dirnames if name not in {".git", "node_modules", "dist", "__pycache__"}]
         for fn in filenames:
             if fn.endswith(".json"):
                 p = os.path.join(dirpath, fn)

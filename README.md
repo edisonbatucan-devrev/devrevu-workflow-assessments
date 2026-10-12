@@ -32,7 +32,7 @@ Package vs deployed, at a glance:
 | 1 - Severity branching | Importable draft-starter template + guide + screenshots | **Completed (user-confirmed)** | Non-blocker comment + real priority-field screenshots to finish the optional checklist |
 | 2 - AI classify + Router | Direct Ask AI -> Router candidate template (`templates/11-Part 2-direct-router.template.json`, exactly 3 routes, native JSONata `$match` regex, no Code steps) + `build.md` + `checklist.md`; structure/regex tests in `tests/part2/` | **Prepared (candidate) - live import/validation pending** | Import the template, Validate (confirm Ask AI -> Router + 3 ports + `$match` conditions), re-export and run the round-trip check, then live-test |
 | 3 - HTTP works.create | request builder / response validator / reverse / notify-gate (`code/` + 52 tests in `tests/part3/`), `build.md` + `build.json` | Prepared | Capture real response shape, deploy, live-test, screenshots |
-| 4 - Business Hours snap-in | dependency-free core (`.mjs`+`.ts`) + Python twin (17 tests), candidate manifest + adapter | Prepared (candidate) | Resolve scopes, compile, CLI-validate, deploy, live-test, screenshots |
+| 4 - Business Hours snap-in | core (`.mjs`+`.ts`) + Python twin + SDK adapter + standard entrypoint; builds locally against SDK v1.1.79 (core 18 + adapter 12 + Python twin 17, all MOCKED); manifest remotely validated | Local-verified; deploy/live run pending | Deploy (`snap_in_version create`), live-test the Conversation Created workflow, add screenshots |
 | 5 - Monitoring/debug | fault-injection build-spec + Python fault/recovery tests (6 tests) | Prepared | Inject fault on a Part 3 copy, debug, fix, screenshots |
 
 ## 2. Run the tests (standard library only)

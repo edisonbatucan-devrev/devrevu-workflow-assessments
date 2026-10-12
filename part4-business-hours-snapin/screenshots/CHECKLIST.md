@@ -1,46 +1,43 @@
-# Part 4 - Workflow evidence
+# Part 4 - Local test evidence
 
-Add your screenshots below. Use ../BUILD-GUIDE.md for setup. Hide tokens and private data.
-Capture everything in `edison-org-for-test`.
+Add your terminal screenshots below. Use `../BUILD-GUIDE.md` for the commands.
 
-## What this workflow does
+These are local tests with mocked schedule responses. They do not show a deployed snap-in or a live workflow.
 
-A snap-in node takes a timestamp and tells the workflow if it is within the org's business
-hours, plus the next opening time. The Conversation Created workflow then branches: within
-hours routes to a live agent, outside hours sends an auto-reply with the next open time.
+## What is checked
 
-## 1. Node in the action list
+The code checks a timestamp against a supplied schedule response and returns whether it is within hours and the next opening time. The tests cover both outcomes and safe error handling.
 
-Image: [Add screenshot of the custom node showing up in the Workflow Builder action list]
+## 1. Successful build
 
-What it shows: the deployed snap-in node is available to add.
+Image: ![alt text](image.png)
 
-## 2. Node config panel
+What it shows: the TypeScript code compiles successfully.
 
-Image: [Add screenshot of the node's configuration panel with the inputs filled in]
+## 2. Within business hours
 
-What it shows: the `org_schedule_id` and `timestamp` inputs populated.
+Image: ![alt text](image-1.png)
 
-## 3. Active workflow
+What it shows: the mocked case passes, asserting `true` and an empty next opening time.
 
-Image: [Add screenshot of the full workflow canvas and its active status]
+## 3. Outside business hours
 
-What it shows: the connected business-hours check, live-agent route, and outside-hours reply.
+Image: ![alt text](image-2.png)
 
-## 4. Workflow run - within hours
+What it shows: the mocked case passes, checking `false` and the next opening against the supplied responses.
 
-Image: [Add screenshot of a test run that lands within business hours]
+## 4. Adapter and function tests
 
-What it shows: `is_within_business_hours` true and the conversation routed to the live agent.
+Image: ![alt text](image-3.png)
 
-## 5. Workflow run - outside hours
+What it shows: function registration, inputs, outputs, and error handling pass without real API calls.
 
-Image: [Add screenshot of a test run that lands outside business hours]
+## 5. Error cases
 
-What it shows: `is_within_business_hours` false, a verified `next_open_time`, and the
-auto-reply with that next opening time.
+Image: ![alt text](image-4.png)
 
-## Notes
+What it shows: the local tests handle invalid timestamps, missing schedule data, and other edge cases.
 
-- Org schedule id used (timezone Asia/Manila lab default):
-- Live group/agent routed to:
+## Scope
+
+Local verification passed; screenshots are still placeholders. No sandbox installation, active workflow, live routing, or actual customer reply is claimed.

@@ -1,0 +1,25 @@
+# Snap-in code dir ignores. The repo root .gitignore already covers node_modules/, dist/,
+# and credentials; this adds the package artifact and local scratch so `npm run package`
+# output and any installed assets are never committed.
+
+# compiled output
+/dist
+/out-tsc
+/tmp
+
+# dependencies
+/node_modules
+node_modules
+
+# packaged snap-in artifact (devrev snap_in_version create input)
+*.tar.gz
+build.tar.gz
+
+# secrets / local env - NEVER commit
+.env
+.env.*
+*token*
+.npmrc.local
+
+# OS / editor
+.DS_Store

@@ -240,7 +240,7 @@
       "importable_artifact": null,
       "build_spec": "part4-business-hours-snapin/workflow.build-spec.json",
       "manifest_candidate": "part4-business-hours-snapin/code/manifest.example.yaml",
-      "locally_tested": "Business-hours core: dependency-free Node test file present. NOTE: Node is NOT installed in the authoring environment, so these tests were NOT executed here; a Python semantic-parity twin + tests cover the same logic and DID run. SDK adapter + manifest are CANDIDATES, not compiled/CLI-validated.",
+      "locally_tested": "local_verified (MOCKED): with Node 18+ and @devrev/typescript-sdk v1.1.79 installed locally, npm run build compiles the TS adapter + standard entrypoint clean (exit 0); npm run test:core = 18, npm run test:adapter = 12, npm run test:core-py = 17, all passing. These use an in-memory fake schedule + injected fetch (SIMULATED/MOCKED), not a live evaluation. Manifest/scopes passed a REMOTE server-side validation (not strictly-local). live_not_verified: snap_in_version create/deploy and the live Conversation Created workflow run were NOT done.",
       "review": {
         "reviewer": null,
         "run": null,

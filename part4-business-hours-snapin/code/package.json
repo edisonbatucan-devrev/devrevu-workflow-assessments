@@ -4,16 +4,19 @@
   "private": true,
   "description": "DevRevU Part 4 - Business Hours Validator custom operation (candidate snap-in).",
   "type": "module",
+  "main": "./dist/index.js",
   "scripts": {
     "test:core": "node test/business_hours.core.test.mjs",
     "test:core-py": "cd test && python3 -m unittest test_business_hours_core",
+    "test:adapter": "npm run build && node test/business_hours.adapter.test.mjs",
     "build": "tsc -p tsconfig.json",
-    "comment": "No Node in the authoring env, so test:core was NOT run here; test:core-py (a Python semantic-parity twin) WAS run. SDK adapter build/deploy requires @devrev/typescript-sdk + DevRev CLI and manifest.example.yaml must be CLI-validated and copied to manifest.yaml; not installed/validated in this package."
+    "package": "npm run build && tar -czf build.tar.gz dist package.json package-lock.json",
+    "comment": "Local-first. 'main' -> dist/index.js is the platform bootstrap entrypoint; it re-exports src/function-factory.ts, which registers the manifest function 'business_hours_validator' by name (official 14-operations pattern). test:core (18 Node cases) + test:core-py (17 Python parity cases) cover the business logic; test:adapter drives the compiled standard entry (dist/index.js functionFactory + the compiled operation wrapper) with a fake injected fetch (no live API). build runs tsc against the installed @devrev/typescript-sdk; package tars the whole dist (incl. the compiled dispatcher dist/index.js + dist/function-factory.js) + package.json + package-lock.json (no node_modules, no creds). Still required before deploy and NOT done here: DevRev CLI manifest validation, snap_in_version create, and the live sandbox workflow run."
   },
   "devDependencies": {
     "typescript": "^5.4.0"
   },
-  "peerDependencies": {
-    "@devrev/typescript-sdk": "*"
+  "dependencies": {
+    "@devrev/typescript-sdk": "^1.1.79"
   }
 }

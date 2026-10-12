@@ -1,34 +1,31 @@
-# Part 5 - Workflow evidence
+# Part 5 - Local test evidence
 
-Add your screenshots below. Use ../BUILD-GUIDE.md for setup. Hide tokens and private data
-(mask any token). Capture everything in `edison-org-for-test`, working on a copy of Part 3.
+Add your terminal screenshots below. Use `../BUILD-GUIDE.md` for the commands.
 
-## What this workflow does
+These tests use synthetic input and make no API calls. They are not screenshots of DevRev workflow Runs or an AI error explanation.
 
-Take a copy of the Part 3 workflow, break it on purpose so a run genuinely fails, find the
-failed run, read the AI error explanation, fix it, publish a new version, and confirm the
-new run succeeds.
+## What is checked
 
-## 1. Failed run
+The validator rejects controlled faults and accepts valid input after the fault is removed.
 
-Image: [Add screenshot of the failed run in the Runs tab]
+## 1. Fault detection
 
-What it shows: the run marked as failed after the fault was injected.
+Image: ![alt text](image.png)
 
-## 2. AI error explanation
+What it shows: the local tests detect the invalid endpoint, non-success response, and injected exception. `OK` means the expected faults were caught.
 
-Image: [Add screenshot of the failed node's error detail with the AI explanation (sparkle button) open]
+## 2. Recovery after the fix
 
-What it shows: the failed node's error and the AI-generated explanation of what went wrong.
+Image: ![alt text](image.png)
 
-## 3. Fixed run
+What it shows: the correct endpoint and synthetic success response are accepted, and normal validation no longer raises.
 
-Image: [Add screenshot of the fixed run on the new version completing successfully]
+## 3. Complete local result
 
-What it shows: after the fix and a new published version, the run finishes end to end.
+Image: ![alt text](image.png)
 
-## Notes
+What it shows: the local failure and recovery checks pass together.
 
-- Fault option used (1 wrong-endpoint / 2 injected-raise):
-- Failed run id:
-- Fixed version run id:
+## Scope
+
+Local tests passed; screenshots are still placeholders. No failed hosted workflow run, AI-generated explanation, published-version recovery, or live notification is claimed.

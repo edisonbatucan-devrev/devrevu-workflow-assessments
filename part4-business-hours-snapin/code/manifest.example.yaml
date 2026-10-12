@@ -1,13 +1,14 @@
 # Part 4 - Business Hours Validator snap-in manifest - CANDIDATE EXAMPLE (NOT a verified,
-# importable deployment manifest). This file is intentionally named manifest.example.yaml so
-# it is NOT mistaken for a deploy-ready manifest. Copy it to `manifest.yaml` only after you
-# have CLI-validated the scopes with your SDK/CLI version.
+# importable deployment manifest). It is named manifest.example.yaml so it is NOT mistaken
+# for a deploy-ready manifest. The STRUCTURE below (version, service_account.scopes.self as a
+# list, functions, operations with slug/function/type/inputs/outputs/static_scopes.self/
+# execute_options) matches the official template (devrev/snap-in-examples 14-operations/
+# manifest.yaml and devrev/devrev-snaps-typescript-template/manifest.yaml).
 #
-# Fields name/display_name/description/slug/function/type/inputs.fields/outputs.fields/
-# ui.display_name are KNOWN. The service_account scopes block and operation static_scopes
-# are a CANDIDATE: the EXACT structure is NOT verified here. Validate with the DevRev CLI
-# (`devrev snap_in version create` / manifest validate) before deploy. Do not treat the
-# scopes section as final. See TODO markers.
+# BEFORE DEPLOY: copy this to ../manifest.yaml (the manifest lives at the PROJECT ROOT, a
+# sibling of code/, NOT inside code/), then CLI-validate the scopes with your SDK/CLI version
+# (`devrev snap_in_version create`). The exact scope SLUG is still CLI-unverified here - see
+# VERIFY-SCOPES. Do not deploy with an unvalidated scope.
 
 version: "2"
 
@@ -18,14 +19,14 @@ description: >-
 
 service_account:
   display_name: Business Hours Validator Bot
-
-# TODO(VERIFY-SCOPES): confirm scope slug + the exact self/scopes structure with the CLI and
-# the API-to-scope reference. 'org_schedule:read' is a CANDIDATE scope name.
+  # VERIFY-SCOPES: parent internal reference ART-15419 indicates org-schedules reads need
+  # `org_schedule:read` (or the readwrite/all variant). The scope SLUG is grounded to that
+  # reference but still MUST be CLI-validated against your platform version before deploy.
   scopes:
     self:
-      - scope: "org_schedule:read"
+      - scope: org_schedule:read
         optional: false
-        reason: "Read and evaluate the org schedule via org-schedules.evaluate/get/list."
+        reason: Read the business-hours schedule.
 
 functions:
   - name: business_hours_validator
@@ -40,35 +41,46 @@ operations:
     slug: business-hours-validator
     function: business_hours_validator
     type: action
-    # TODO(VERIFY-SCOPES): operation static_scopes required to call org-schedules.evaluate
-    # are UNRESOLVED. Mark explicit and validate with the CLI; do NOT fabricate.
-    # static_scopes:
-    #   - "<unresolved - validate with CLI / API-to-scope reference>"
+    # VERIFY-SCOPES: operation static_scopes gate the org-schedules.evaluate call. Grounded to
+    # ART-15419 (org_schedule:read); CLI-validate before deploy. `static_scopes.self` is the
+    # list shape used by the official 14-operations example.
+    static_scopes:
+      self:
+        - scope: org_schedule:read
+          optional: false
+          reason: Evaluate the business-hours schedule.
     inputs:
       fields:
         - name: org_schedule_id
-          display_name: Org schedule ID
           description: The organization schedule to evaluate against.
           field_type: text
           is_required: true
+          ui:
+            display_name: Org schedule ID
         - name: timestamp
-          display_name: Timestamp
-          description: ISO-8601 timestamp (with offset) to evaluate. e.g. conversation created_date.
+          description: ISO-8601 timestamp with offset to evaluate.
           field_type: text
           is_required: true
+          ui:
+            display_name: Timestamp
     outputs:
       fields:
         - name: is_within_business_hours
-          display_name: Is within business hours
           description: True if the timestamp falls within business hours.
           field_type: bool
+          ui:
+            display_name: Is within business hours
         - name: next_open_time
-          display_name: Next open time
-          description: Next opening time (ISO-8601) if outside hours; empty if active or unknown.
+          description: Next opening time; empty if active or unknown.
           field_type: text
+          ui:
+            display_name: Next open time
         - name: evaluated_at
-          display_name: Evaluated at
           description: The normalized ISO-8601 instant that was evaluated.
           field_type: text
-    ui:
-      display_name: Business Hour Validator
+          ui:
+            display_name: Evaluated at
+    # Bounded execution timeout (seconds). The adapter also enforces an 8s HTTP timeout on the
+    # org-schedules.evaluate call (EVALUATE_TIMEOUT_MS).
+    execute_options:
+      default_timeout: 30
